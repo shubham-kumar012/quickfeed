@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
 import authRoutes from "./routes/authRoutes.js";
+import postRoutes from "./routes/postRoutes.js";
 
 // 1. Load environment variables from .env file
 dotenv.config();
@@ -17,13 +18,14 @@ app.use(express.json());
 
 // 3. Register routes
 app.use("/api/auth", authRoutes);
+app.use("/api/posts", postRoutes);
 
 // Root health check route
 app.get("/", (req, res) => {
   res.json({ message: "QuickFeed API is running..." });
 });
 
-// 4. Connect to MongoDB and start server
+// 4. Connect to MongoDB and start Express server
 const startServer = async () => {
   try {
     if (!MONGO_URI) {

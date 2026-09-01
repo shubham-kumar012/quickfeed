@@ -54,14 +54,20 @@ const Signup = () => {
   const validateForm = () => {
     const newErrors = {};
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const usernameRegex = /^[a-zA-Z0-9_]+$/;
 
-    // Username validation
-    if (!formData.username.trim()) {
+    // Username validation: No spaces, alphanumeric and underscores allowed, 3-30 chars
+    const trimmedUsername = formData.username.trim();
+    if (!trimmedUsername) {
       newErrors.username = "Username is required";
-    } else if (formData.username.trim().length < 3) {
+    } else if (/\s/.test(formData.username)) {
+      newErrors.username = "Username cannot contain spaces";
+    } else if (trimmedUsername.length < 3) {
       newErrors.username = "Username must be at least 3 characters";
-    } else if (formData.username.trim().length > 30) {
+    } else if (trimmedUsername.length > 30) {
       newErrors.username = "Username cannot exceed 30 characters";
+    } else if (!usernameRegex.test(trimmedUsername)) {
+      newErrors.username = "Username can only contain letters, numbers, and underscores";
     }
 
     // Email validation
@@ -143,7 +149,7 @@ const Signup = () => {
               name="username"
               autoComplete="username"
               autoFocus
-              placeholder="e.g. shubham"
+              placeholder="e.g. shubham_123"
               value={formData.username}
               onChange={handleChange}
               error={Boolean(errors.username)}

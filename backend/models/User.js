@@ -1,6 +1,8 @@
 import mongoose from "mongoose";
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+// Username allows letters, numbers, and underscores, strictly without spaces
+const usernameRegex = /^[a-zA-Z0-9_]+$/;
 
 const userSchema = new mongoose.Schema(
   {
@@ -10,6 +12,10 @@ const userSchema = new mongoose.Schema(
       trim: true,
       minlength: [3, "Username must be at least 3 characters long"],
       maxlength: [30, "Username cannot exceed 30 characters"],
+      match: [
+        usernameRegex,
+        "Username can only contain letters, numbers, and underscores (no spaces)",
+      ],
     },
     email: {
       type: String,

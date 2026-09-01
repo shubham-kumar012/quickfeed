@@ -22,6 +22,29 @@ export const signup = async (req, res) => {
       });
     }
 
+    const trimmedUsername = username.trim();
+
+    // Username format validation (no spaces, alphanumeric + underscores, 3-30 chars)
+    if (trimmedUsername.length < 3 || trimmedUsername.length > 30) {
+      return res.status(400).json({
+        message: "Username must be between 3 and 30 characters long",
+      });
+    }
+
+    if (/\s/.test(username)) {
+      return res.status(400).json({
+        message: "Username cannot contain spaces",
+      });
+    }
+
+    const usernameRegex = /^[a-zA-Z0-9_]+$/;
+    if (!usernameRegex.test(trimmedUsername)) {
+      return res.status(400).json({
+        message: "Username can only contain letters, numbers, and underscores",
+      });
+    }
+
+    // Password validation
     if (password.length < 6) {
       return res.status(400).json({
         message: "Password must be at least 6 characters long",
@@ -44,7 +67,7 @@ export const signup = async (req, res) => {
 
     // 4. Create and save new user in MongoDB
     const newUser = await User.create({
-      username: username.trim(),
+      username: trimmedUsername,
       email: normalizedEmail,
       password: hashedPassword,
     });
