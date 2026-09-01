@@ -16,6 +16,31 @@ const postSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+    likedBy: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
+    comments: [
+      {
+        user: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+          required: true,
+        },
+        text: {
+          type: String,
+          required: [true, "Comment text is required"],
+          trim: true,
+          maxlength: [500, "Comment cannot exceed 500 characters"],
+        },
+        createdAt: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
   },
   {
     timestamps: true, // Automatically creates createdAt and updatedAt fields

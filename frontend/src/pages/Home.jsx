@@ -15,19 +15,21 @@ import Navbar from "../components/Navbar";
 import CreatePost from "../components/CreatePost";
 import PostCard from "../components/PostCard";
 import { getPosts } from "../services/postService";
+import { useAuth } from "../context/AuthContext";
 
 const Home = () => {
+  const { token } = useAuth();
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // Load public posts from the backend
+  // Load public posts from the backend (with user's like state)
   const fetchPosts = useCallback(async () => {
     setLoading(true);
     setError("");
 
     try {
-      const data = await getPosts();
+      const data = await getPosts(token);
       setPosts(data);
     } catch (err) {
       setError(
@@ -36,7 +38,7 @@ const Home = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [token]);
 
   useEffect(() => {
     fetchPosts();

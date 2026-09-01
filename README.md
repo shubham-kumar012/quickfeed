@@ -9,12 +9,12 @@ A clean, modern, full-stack social posting application built with **React (JavaS
 ### Frontend
 - **React.js** (Vite)
 - **React Router v7** (Client-side routing & Protected Routes)
-- **Material UI (MUI v6)** (Dark mode theme, seamless auto-growing composer, responsive layouts)
-- **Vanilla CSS / Emotion** (Custom dark-mode styles)
+- **Material UI (MUI v6)** (Dark mode theme, auto-growing composer, responsive post cards)
+- **Vanilla CSS / Emotion** (Custom dark-mode styles & slim scrollbars)
 
 ### Backend
 - **Node.js & Express.js** (REST API)
-- **MongoDB & Mongoose** (Database collections: `users` and `posts`)
+- **MongoDB & Mongoose** (Database strictly using only two collections: `users` and `posts`)
 - **Cloudinary** (Cloud image storage via `upload_stream`)
 - **Sharp** (High-performance in-memory image resizing, compression & WebP conversion)
 - **Multer** (In-memory multipart upload processing)
@@ -25,12 +25,12 @@ A clean, modern, full-stack social posting application built with **React (JavaS
 
 ---
 
-## ✨ Features Currently Implemented
+## ✨ Features Implemented
 
 ### 1. Authentication & Security
-- [x] **User Registration (Signup)**: Input validation (username, email format, minimum password length, password confirmation), duplicate email check (409 Conflict), bcrypt hashing (10 salt rounds), and automatic JWT issuance.
+- [x] **User Registration (Signup)**: Input validation (strict username validation without spaces, email regex format, min 6-character password, password confirmation), duplicate email check (409 Conflict), bcrypt hashing (10 salt rounds), and automatic JWT issuance.
 - [x] **User Authentication (Login)**: Secure credential validation, bcrypt password comparison, JWT generation, and generic error messages to prevent user enumeration.
-- [x] **JWT Authentication & Middleware**: Bearer token verification middleware guarding private endpoints (`/api/auth/me`, `POST /api/posts`).
+- [x] **JWT Authentication & Middleware**: Bearer token verification middleware guarding private endpoints (`/api/auth/me`, `POST /api/posts`, `POST/DELETE /api/posts/:postId/like`, `POST /api/posts/:postId/comments`).
 - [x] **Current User Endpoint (`/api/auth/me`)**: Protected route returning sanitized user information (password is never exposed).
 - [x] **Persistent Session Management (`AuthContext`)**: Client-side state storing token in `localStorage`, verifying validity on refresh, and maintaining seamless login sessions.
 - [x] **Protected Routes**: Restricts access to `/home` for authenticated users and redirects unauthenticated users to `/login`.
@@ -39,7 +39,7 @@ A clean, modern, full-stack social posting application built with **React (JavaS
 
 ### 2. Social Composer (Create Post)
 - [x] **Seamless Auto-Growing Composer**: Starts compact (~48px–64px height) without a boxy border, naturally expanding downward as the user types.
-- [x] **Viewport-Based Scroll**: Dynamically caps maximum textarea height to the usable viewport (`calc(100vh - 300px)`), enabling vertical scrolling only when reaching the maximum threshold.
+- [x] **Slim Themed Scrollbar**: Capped at viewport height (`calc(100vh - 300px)`), with a slim 5px dark-themed scrollbar appearing only when needed.
 - [x] **Post Types Supported**:
   - Text-only posts
   - Image-only posts
@@ -54,7 +54,16 @@ A clean, modern, full-stack social posting application built with **React (JavaS
 - [x] **WebP Compression**: Images are compressed and converted into lightweight WebP format (`quality: 80`).
 - [x] **Cloudinary Storage**: Streamed directly to Cloudinary into the `mini-social-app/posts` folder, persisting only the HTTPS `secure_url` in MongoDB.
 
-### 4. Public Social Feed
+### 4. Likes & Comments (Social Interaction)
+- [x] **Optimistic Likes**: Instant heart icon toggle and count updates without waiting for network response, with automatic rollback if the API fails.
+- [x] **Duplicate Like Prevention**: Uses MongoDB `$addToSet` for liking and `$pull` for unliking to ensure users can only like a post once.
+- [x] **Zero-Count Rule**: When like or comment count is 0, only the icon is displayed (never shows `0`).
+- [x] **Embedded Comments**: Comments are stored directly inside the post document in MongoDB with author references and timestamps.
+- [x] **Optimistic Comments**: New comments appear immediately in the UI with a temporary state and update seamlessly once persisted by the server.
+- [x] **Comment Validation**: Enforces non-empty trimmed text (up to 500 characters).
+- [x] **Author Username Display**: Comments prominently display the commenter's username and human-friendly relative timestamp.
+
+### 5. Public Social Feed
 - [x] **All Public Posts**: Retrieves all posts created across the platform.
 - [x] **Sorted Chronologically**: Newest posts automatically appear first (`createdAt: -1`).
 - [x] **Post Author Info**: Displays author's initial avatar and username.
@@ -75,23 +84,23 @@ quickfeed/
 │   │   │   ├── AuthLayout.jsx       # Centered auth wrapper with brand header
 │   │   │   ├── Navbar.jsx           # Sticky top navbar with user profile & logout
 │   │   │   ├── CreatePost.jsx       # Auto-growing composer with image preview
-│   │   │   ├── PostCard.jsx         # Post feed item displaying author, text, Cloudinary image, time
+│   │   │   ├── PostCard.jsx         # Post feed item with optimistic likes & comments
 │   │   │   ├── ProtectedRoute.jsx   # Route guard for authenticated pages
 │   │   │   └── PublicRoute.jsx      # Route guard for unauthenticated pages
 │   │   ├── context/
 │   │   │   └── AuthContext.jsx      # React Context managing auth state, login & logout
 │   │   ├── pages/
 │   │   │   ├── Login.jsx            # Sign in page with validation & password toggle
-│   │   │   ├── Signup.jsx           # Account registration page
-│   │   └── Home.jsx                 # Social feed & post creation page
+│   │   │   ├── Signup.jsx           # Account registration page with strict username rules
+│   │   │   └── Home.jsx             # Social feed & post creation page
 │   │   ├── services/
 │   │   │   ├── authService.js       # Centralized auth API fetch handlers
-│   │   │   └── postService.js       # Centralized posts API fetch handlers
+│   │   │   └── postService.js       # Centralized posts, likes & comments API handlers
 │   │   ├── utils/
 │   │   │   └── formatDate.js        # Human-friendly relative time formatter
 │   │   ├── App.jsx                  # React Router routes and provider setup
 │   │   ├── main.jsx                 # Application entry with MUI ThemeProvider
-│   │   └── theme.js                 # Professional dark-mode MUI theme
+│   │   └── theme.js                 # Professional dark-mode MUI theme & slim scrollbar
 │   ├── vite.config.js               # Vite config with backend API proxy
 │   └── package.json                 # Frontend dependencies
 │
@@ -100,16 +109,16 @@ quickfeed/
 │   │   └── cloudinary.js            # Cloudinary SDK configuration
 │   ├── controllers/
 │   │   ├── authController.js        # Signup, Login, and GetMe business logic
-│   │   └── postController.js        # CreatePost (Sharp + Cloudinary) & GetPosts logic
+│   │   └── postController.js        # CreatePost, GetPosts, Like/Unlike & Comment logic
 │   ├── middleware/
 │   │   ├── authMiddleware.js        # JWT Bearer token verification middleware
 │   │   └── uploadMiddleware.js      # Multer memory storage and filetype/size filter
 │   ├── models/
 │   │   ├── User.js                  # Mongoose schema for User
-│   │   └── Post.js                  # Mongoose schema for Post (stores Cloudinary URL)
+│   │   └── Post.js                  # Mongoose schema for Post (with likedBy and comments)
 │   ├── routes/
 │   │   ├── authRoutes.js            # Express router mapping auth endpoints
-│   │   └── postRoutes.js            # Express router mapping posts endpoints
+│   │   └── postRoutes.js            # Express router mapping posts, like & comment endpoints
 │   ├── .env                         # Environment variables (ignored in git)
 │   ├── .env.example                 # Example environment template
 │   ├── server.js                    # Express app entry, routes & database connection
@@ -209,12 +218,16 @@ CLOUDINARY_API_SECRET=your_cloudinary_api_secret
 | `GET` | `/api/auth/me` | Private | Retrieve current user profile (requires `Bearer <token>`) |
 | `POST` | `/api/posts` | Private | Create post with text and/or in-memory image buffer |
 | `GET` | `/api/posts` | Public | Fetch all public posts sorted newest first |
+| `POST` | `/api/posts/:postId/like` | Private | Like a post |
+| `DELETE` | `/api/posts/:postId/like` | Private | Unlike a post |
+| `POST` | `/api/posts/:postId/comments` | Private | Add a comment to a post (`{ text }`) |
 
 ---
 
 ## 🎓 Interview Talking Points (Key Concepts)
 
-1. **In-Memory Streaming vs Disk Storage**: Uploaded files never touch the server disk. `multer.memoryStorage()` retains the file in RAM buffer, `sharp` optimizes and converts to WebP in-memory, and `cloudinary.uploader.upload_stream` streams the buffer directly to the cloud.
-2. **Bandwidth & Storage Optimization**: Automatic image resizing (max 1600x1600) and WebP compression (`quality: 80`) significantly reduce payload sizes and cloud storage requirements while maintaining high visual fidelity.
-3. **Seamless Composer UX**: The text input starts compact and frameless, expanding downward with typing, capped at viewport height (`calc(100vh - 300px)`) with scrollbars appearing only when the content exceeds the ceiling.
-4. **Optimistic Feed Updates**: Newly published posts are prepended directly to React state (`setPosts(prev => [newPost, ...prev])`), updating the feed instantly without a full page refresh.
+1. **Two-Collection MongoDB Design**: Only `users` and `posts` collections exist. Likes (`likedBy`) and comments (`comments`) are stored directly within each Post document, removing the complexity of maintaining 4+ disparate collections.
+2. **Atomic Like Operations**: Utilizing MongoDB's `$addToSet` ensures idempotent and duplicate-free like additions, while `$pull` atomically handles unliking.
+3. **Dynamic vs Static Counters**: Counts are computed dynamically from array lengths (`likedBy.length`, `comments.length`) rather than storing separate counters, eliminating data desynchronization bugs.
+4. **Optimistic UI with Error Rollback**: Likes and comments update immediately in React state to provide zero-latency feedback to the user. If the network request fails, the component rolls back to its exact previous state and displays a non-intrusive alert toast.
+5. **In-Memory Streaming vs Disk Storage**: Uploaded files never touch the server disk. `multer.memoryStorage()` retains the file in RAM buffer, `sharp` optimizes and converts to WebP in-memory, and `cloudinary.uploader.upload_stream` streams the buffer directly to the cloud.

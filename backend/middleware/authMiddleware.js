@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 
 // Middleware to verify JWT token and protect private routes
-const authMiddleware = (req, res, next) => {
+export const authMiddleware = (req, res, next) => {
   try {
     // 1. Get Authorization header (format: "Bearer <token>")
     const authHeader = req.headers.authorization;
@@ -28,6 +28,22 @@ const authMiddleware = (req, res, next) => {
       message: "Invalid or expired token. Please log in again.",
     });
   }
+};
+
+// Optional auth middleware: extracts user if token exists, but doesn't block public access
+export const optionalAuthMiddleware = (req, res, next) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      const token = authHeader.split(" ")[1];
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      req.user = decoded;
+    }
+  } catch (error) {
+    // Ignore error for optional authentication
+    req.user = null;
+  }
+  next();
 };
 
 export default authMiddleware;
