@@ -4,11 +4,11 @@ import authMiddleware from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-// Public routes
+// Public auth routes (anyone can access)
 router.post("/signup", signup);
 router.post("/login", login);
 
-// Protected route
+// Protected auth route (requires valid JWT token in headers)
 router.get("/me", authMiddleware, getMe);
 
 export default router;

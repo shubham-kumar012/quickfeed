@@ -3,71 +3,106 @@ import {
   AppBar,
   Toolbar,
   Typography,
-  Box,
   Button,
   Container,
   Stack,
   Avatar,
   IconButton,
   Tooltip,
+  Box,
 } from "@mui/material";
-import DynamicFeedOutlinedIcon from "@mui/icons-material/DynamicFeedOutlined";
+import DynamicFeedIcon from "@mui/icons-material/DynamicFeed";
 import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
 import { useNavigate, Link as RouterLink } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
+// Top navigation bar showing QuickFeed brand, user profile, and logout button
 const Navbar = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
 
+  // Log out user and send them back to login page
   const handleLogout = () => {
     logout();
     navigate("/login");
   };
 
-  // Get initial for avatar
+  // Get the first letter of the username for the avatar
   const userInitial = user?.username ? user.username.charAt(0).toUpperCase() : "U";
 
   return (
-    <AppBar position="sticky" elevation={0}>
-      <Container maxWidth="md">
-        <Toolbar disableGutters sx={{ justifyContent: "space-between", minHeight: 60 }}>
-          {/* Logo & Brand */}
+    <AppBar
+      position="sticky"
+      elevation={0}
+      sx={{
+        backgroundColor: "#111827",
+        borderBottom: "1px solid #253247",
+        height: 64,
+        justifyContent: "center",
+      }}
+    >
+      <Container
+        maxWidth={false}
+        sx={{
+          maxWidth: 800,
+          mx: "auto",
+          px: { xs: 2, sm: 3 },
+        }}
+      >
+        <Toolbar
+          disableGutters
+          sx={{
+            justifyContent: "space-between",
+            minHeight: "64px !important",
+          }}
+        >
+          {/* QuickFeed Brand Logo & Name */}
           <Stack
             component={RouterLink}
             to="/home"
             direction="row"
             alignItems="center"
-            spacing={1}
+            spacing={1.25}
             sx={{
               textDecoration: "none",
               color: "text.primary",
+              userSelect: "none",
             }}
           >
-            <DynamicFeedOutlinedIcon sx={{ color: "primary.main", fontSize: 24 }} />
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "primary.main",
+              }}
+            >
+              <DynamicFeedIcon sx={{ fontSize: 24, color: "#3B82F6" }} />
+            </Box>
             <Typography
               variant="h6"
               component="span"
               sx={{
                 fontWeight: 700,
                 letterSpacing: "-0.02em",
-                color: "text.primary",
-                fontSize: "1.125rem",
+                color: "#F5F7FA",
+                fontSize: "1.25rem",
               }}
             >
-              Socially
+              QuickFeed
             </Typography>
           </Stack>
 
-          {/* User Info & Logout Button */}
+          {/* User Profile Info & Logout Button */}
           <Stack direction="row" spacing={1.5} alignItems="center">
-            {/* User chip / badge */}
-            <Stack direction="row" spacing={1} alignItems="center" sx={{ mr: 0.5 }}>
+            {/* User avatar and username */}
+            <Stack direction="row" spacing={1.25} alignItems="center">
               <Avatar
                 sx={{
-                  bgcolor: "primary.main",
-                  width: 32,
-                  height: 32,
+                  bgcolor: "#3B82F6",
+                  color: "#FFFFFF",
+                  width: 34,
+                  height: 34,
                   fontSize: "0.875rem",
                   fontWeight: 600,
                 }}
@@ -78,8 +113,13 @@ const Navbar = () => {
                 variant="body2"
                 sx={{
                   fontWeight: 600,
-                  color: "text.primary",
+                  color: "#F5F7FA",
+                  fontSize: "0.90625rem",
                   display: { xs: "none", sm: "block" },
+                  maxWidth: 160,
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
                 }}
               >
                 {user?.username || "User"}
@@ -89,19 +129,28 @@ const Navbar = () => {
             {/* Desktop Logout Button */}
             <Button
               onClick={handleLogout}
-              startIcon={<LogoutOutlinedIcon />}
+              startIcon={<LogoutOutlinedIcon sx={{ fontSize: "0.95rem !important" }} />}
               variant="outlined"
               size="small"
               sx={{
                 display: { xs: "none", sm: "inline-flex" },
                 px: 1.5,
                 py: 0.5,
+                fontSize: "0.8125rem",
+                color: "#A7B1C2",
+                borderColor: "#253247",
+                backgroundColor: "transparent",
+                "&:hover": {
+                  color: "#F5F7FA",
+                  backgroundColor: "#1A2537",
+                  borderColor: "#31405A",
+                },
               }}
             >
               Logout
             </Button>
 
-            {/* Mobile Icon Logout Button */}
+            {/* Mobile Logout Icon */}
             <Tooltip title="Logout">
               <IconButton
                 onClick={handleLogout}
@@ -109,11 +158,17 @@ const Navbar = () => {
                 aria-label="Logout"
                 sx={{
                   display: { xs: "inline-flex", sm: "none" },
-                  color: "text.secondary",
-                  "&:hover": { color: "text.primary" },
+                  color: "#A7B1C2",
+                  border: "1px solid #253247",
+                  p: 0.75,
+                  "&:hover": {
+                    color: "#F5F7FA",
+                    backgroundColor: "#1A2537",
+                    borderColor: "#31405A",
+                  },
                 }}
               >
-                <LogoutOutlinedIcon fontSize="small" />
+                <LogoutOutlinedIcon sx={{ fontSize: "1.1rem" }} />
               </IconButton>
             </Tooltip>
           </Stack>

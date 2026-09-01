@@ -1,15 +1,13 @@
+// Posts API base URL (Vite proxies this to localhost:5000 in dev)
 const API_BASE_URL = "/api/posts";
 
-/**
- * Fetch all public posts (sorted newest first)
- * @param {string} [token] - Optional JWT token to determine current user's liked status
- * @returns {Promise<Array>} List of posts
- */
+// Get all posts to display in the social feed
 export const getPosts = async (token) => {
   const headers = {
     "Content-Type": "application/json",
   };
 
+  // If user is logged in, pass token so backend knows if they liked each post
   if (token) {
     headers["Authorization"] = `Bearer ${token}`;
   }
@@ -28,12 +26,7 @@ export const getPosts = async (token) => {
   return data.posts || [];
 };
 
-/**
- * Create a new post (text, image, or text + image)
- * @param {FormData|Object} postData - Post payload
- * @param {string} token - JWT authentication token
- * @returns {Promise<Object>} Created post object
- */
+// Create a new post (handles text and/or image upload)
 export const createPost = async (postData, token) => {
   const headers = {};
 
@@ -43,7 +36,7 @@ export const createPost = async (postData, token) => {
 
   let body = postData;
 
-  // If payload is a plain object instead of FormData, stringify it
+  // If sending raw JSON instead of FormData, stringify it
   if (!(postData instanceof FormData)) {
     headers["Content-Type"] = "application/json";
     body = JSON.stringify(postData);
@@ -64,12 +57,7 @@ export const createPost = async (postData, token) => {
   return data.post;
 };
 
-/**
- * Like a post
- * @param {string} postId - Post ID
- * @param {string} token - JWT authentication token
- * @returns {Promise<Object>} { liked: true, likeCount }
- */
+// Like a post
 export const likePost = async (postId, token) => {
   const response = await fetch(`${API_BASE_URL}/${postId}/like`, {
     method: "POST",
@@ -88,12 +76,7 @@ export const likePost = async (postId, token) => {
   return data;
 };
 
-/**
- * Unlike a post
- * @param {string} postId - Post ID
- * @param {string} token - JWT authentication token
- * @returns {Promise<Object>} { liked: false, likeCount }
- */
+// Unlike a post
 export const unlikePost = async (postId, token) => {
   const response = await fetch(`${API_BASE_URL}/${postId}/like`, {
     method: "DELETE",
@@ -112,13 +95,7 @@ export const unlikePost = async (postId, token) => {
   return data;
 };
 
-/**
- * Add a comment to a post
- * @param {string} postId - Post ID
- * @param {string} text - Comment text
- * @param {string} token - JWT authentication token
- * @returns {Promise<Object>} { comment, commentCount }
- */
+// Add a comment to a post
 export const addComment = async (postId, text, token) => {
   const response = await fetch(`${API_BASE_URL}/${postId}/comments`, {
     method: "POST",
@@ -138,13 +115,7 @@ export const addComment = async (postId, text, token) => {
   return data;
 };
 
-/**
- * Delete a comment from a post
- * @param {string} postId - Post ID
- * @param {string} commentId - Comment ID
- * @param {string} token - JWT authentication token
- * @returns {Promise<Object>} { message, commentCount }
- */
+// Delete your own comment from a post
 export const deleteComment = async (postId, commentId, token) => {
   const response = await fetch(`${API_BASE_URL}/${postId}/comments/${commentId}`, {
     method: "DELETE",

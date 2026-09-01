@@ -1,11 +1,7 @@
-// API base URL pointing to the authentication endpoints
+// Auth API base URL (Vite proxies this to localhost:5000 in dev)
 const API_BASE_URL = "/api/auth";
 
-/**
- * Register a new user
- * @param {Object} userData - { username, email, password }
- * @returns {Promise<Object>} Response containing token and user info
- */
+// Send signup request to backend
 export const signup = async (userData) => {
   const response = await fetch(`${API_BASE_URL}/signup`, {
     method: "POST",
@@ -24,11 +20,7 @@ export const signup = async (userData) => {
   return data;
 };
 
-/**
- * Log in an existing user
- * @param {Object} credentials - { email, password }
- * @returns {Promise<Object>} Response containing token and user info
- */
+// Send login request to backend
 export const login = async (credentials) => {
   const response = await fetch(`${API_BASE_URL}/login`, {
     method: "POST",
@@ -47,11 +39,7 @@ export const login = async (credentials) => {
   return data;
 };
 
-/**
- * Fetch the currently authenticated user profile
- * @param {string} token - JWT authentication token
- * @returns {Promise<Object>} User data
- */
+// Fetch current user details using stored JWT token
 export const getCurrentUser = async (token) => {
   const response = await fetch(`${API_BASE_URL}/me`, {
     method: "GET",

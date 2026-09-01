@@ -10,20 +10,21 @@ import {
   Paper,
 } from "@mui/material";
 import RefreshIcon from "@mui/icons-material/Refresh";
-import DynamicFeedOutlinedIcon from "@mui/icons-material/DynamicFeedOutlined";
+import DynamicFeedIcon from "@mui/icons-material/DynamicFeed";
 import Navbar from "../components/Navbar";
 import CreatePost from "../components/CreatePost";
 import PostCard from "../components/PostCard";
 import { getPosts } from "../services/postService";
 import { useAuth } from "../context/AuthContext";
 
+// Main home page with create post box and community social feed
 const Home = () => {
   const { token } = useAuth();
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // Load public posts from the backend (with user's like state)
+  // Fetch all posts from the backend
   const fetchPosts = useCallback(async () => {
     setLoading(true);
     setError("");
@@ -40,11 +41,12 @@ const Home = () => {
     }
   }, [token]);
 
+  // Load feed once component mounts
   useEffect(() => {
     fetchPosts();
   }, [fetchPosts]);
 
-  // Prepend newly created post to the feed instantly
+  // Prepend newly created post to the top of the feed immediately
   const handlePostCreated = (newPost) => {
     if (newPost) {
       setPosts((prevPosts) => [newPost, ...prevPosts]);
@@ -52,57 +54,64 @@ const Home = () => {
   };
 
   return (
-    <Box sx={{ minHeight: "100vh", backgroundColor: "background.default" }}>
-      {/* Top Sticky Header */}
+    <Box sx={{ minHeight: "100vh", backgroundColor: "#0B0F17" }}>
+      {/* Top navigation header */}
       <Navbar />
 
-      {/* Main Centered Content Container */}
+      {/* Main centered container */}
       <Container
         maxWidth={false}
         sx={{
-          maxWidth: 720,
+          maxWidth: 800,
           mx: "auto",
-          py: { xs: 2.5, sm: 4 },
+          py: { xs: 3, sm: 4.5 },
           px: { xs: 2, sm: 3 },
         }}
       >
-        <Stack spacing={3}>
-          {/* Create Post Section */}
+        <Stack spacing={3.5}>
+          {/* Create Post composer */}
           <CreatePost onPostCreated={handlePostCreated} />
 
-          {/* Public Feed Header */}
+          {/* Public feed section title and refresh button */}
           <Box
             sx={{
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
-              pt: 1,
+              pt: 0.5,
+              px: 0.5,
             }}
           >
             <Typography
-              variant="h6"
+              variant="h5"
               component="h2"
               sx={{
                 fontWeight: 700,
-                color: "text.primary",
-                fontSize: "1.125rem",
-                letterSpacing: "-0.01em",
+                color: "#F5F7FA",
+                fontSize: "1.25rem",
+                letterSpacing: "-0.015em",
               }}
             >
               Public Feed
             </Typography>
 
+            {/* Refresh feed button */}
             <Button
               size="small"
               startIcon={<RefreshIcon sx={{ fontSize: "1rem !important" }} />}
               onClick={fetchPosts}
               disabled={loading}
               sx={{
-                color: "text.secondary",
-                fontSize: "0.8125rem",
+                color: "#A7B1C2",
+                fontSize: "0.84375rem",
+                textTransform: "none",
+                fontWeight: 600,
+                px: 1.25,
+                py: 0.5,
+                borderRadius: "8px",
                 "&:hover": {
-                  color: "primary.main",
-                  backgroundColor: "transparent",
+                  color: "#F5F7FA",
+                  backgroundColor: "#1A2537",
                 },
               }}
             >
@@ -110,7 +119,7 @@ const Home = () => {
             </Button>
           </Box>
 
-          {/* Loading State */}
+          {/* Feed loading indicator */}
           {loading && (
             <Box
               sx={{
@@ -118,17 +127,17 @@ const Home = () => {
                 flexDirection: "column",
                 alignItems: "center",
                 justifyContent: "center",
-                py: 6,
+                py: 8,
               }}
             >
-              <CircularProgress size={36} sx={{ color: "primary.main", mb: 2 }} />
-              <Typography variant="body2" color="text.secondary">
-                Loading posts...
+              <CircularProgress size={32} sx={{ color: "#3B82F6", mb: 2 }} />
+              <Typography variant="body2" sx={{ color: "#7F8A9D" }}>
+                Loading feed...
               </Typography>
             </Box>
           )}
 
-          {/* Error State */}
+          {/* Feed error alert */}
           {!loading && error && (
             <Alert
               severity="error"
@@ -142,21 +151,26 @@ const Home = () => {
                   Try Again
                 </Button>
               }
-              sx={{ borderRadius: 2 }}
+              sx={{
+                borderRadius: "10px",
+                backgroundColor: "#1F2937",
+                color: "#F5F7FA",
+                border: "1px solid #EF4444",
+              }}
             >
               {error}
             </Alert>
           )}
 
-          {/* Empty Feed State */}
+          {/* Empty feed state when database has 0 posts */}
           {!loading && !error && posts.length === 0 && (
             <Paper
               variant="outlined"
               sx={{
-                p: { xs: 4, sm: 5 },
-                borderRadius: 2,
-                backgroundColor: "background.paper",
-                borderColor: "divider",
+                p: { xs: 4, sm: 6 },
+                borderRadius: "14px",
+                backgroundColor: "#111827",
+                borderColor: "#253247",
                 textAlign: "center",
               }}
             >
@@ -170,28 +184,28 @@ const Home = () => {
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    color: "primary.main",
+                    color: "#3B82F6",
                     mb: 0.5,
                   }}
                 >
-                  <DynamicFeedOutlinedIcon sx={{ fontSize: 26 }} />
+                  <DynamicFeedIcon sx={{ fontSize: 24 }} />
                 </Box>
                 <Typography
                   variant="h6"
-                  sx={{ fontWeight: 600, color: "text.primary" }}
+                  sx={{ fontWeight: 700, color: "#F5F7FA", fontSize: "1.125rem" }}
                 >
                   No posts yet
                 </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Be the first person to share something.
+                <Typography variant="body2" sx={{ color: "#A7B1C2", fontSize: "0.90625rem" }}>
+                  Be the first to share something with the community.
                 </Typography>
               </Stack>
             </Paper>
           )}
 
-          {/* Public Posts Feed List */}
+          {/* Render list of post cards */}
           {!loading && !error && posts.length > 0 && (
-            <Stack spacing={2}>
+            <Stack spacing={2.5}>
               {posts.map((post) => (
                 <PostCard key={post._id} post={post} />
               ))}

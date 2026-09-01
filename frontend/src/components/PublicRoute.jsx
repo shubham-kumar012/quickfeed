@@ -3,10 +3,11 @@ import { Navigate } from "react-router-dom";
 import { Box, CircularProgress } from "@mui/material";
 import { useAuth } from "../context/AuthContext";
 
+// Route wrapper for public pages (Login/Signup) so logged-in users don't see them again
 const PublicRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
 
-  // Show minimal loading state while verifying token
+  // Show small spinner while checking session
   if (loading) {
     return (
       <Box
@@ -15,19 +16,20 @@ const PublicRoute = ({ children }) => {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          backgroundColor: "background.default",
+          backgroundColor: "#0B0F17",
         }}
       >
-        <CircularProgress size={32} sx={{ color: "primary.main" }} />
+        <CircularProgress size={32} sx={{ color: "#3B82F6" }} />
       </Box>
     );
   }
 
-  // If already authenticated, redirect away from login/signup to /home
+  // Already logged in? Redirect directly to the feed
   if (isAuthenticated) {
     return <Navigate to="/home" replace />;
   }
 
+  // Not logged in! Show login or signup form
   return children;
 };
 

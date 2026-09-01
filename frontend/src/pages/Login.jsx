@@ -16,22 +16,24 @@ import { Link as RouterLink, useNavigate } from "react-router-dom";
 import AuthLayout from "../components/AuthLayout";
 import { useAuth } from "../context/AuthContext";
 
+// Login page component
 const Login = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
 
-  // Form State
+  // Form input state
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
 
-  // UI State
+  // Password visibility and form error state
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({});
   const [errorMessage, setErrorMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Update form inputs as user types
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -39,7 +41,7 @@ const Login = () => {
       [name]: value,
     }));
 
-    // Clear field-specific error upon typing
+    // Clear error message when user starts typing again
     if (errors[name]) {
       setErrors((prev) => ({
         ...prev,
@@ -48,20 +50,24 @@ const Login = () => {
     }
   };
 
+  // Toggle password visibility between text and hidden dots
   const handleTogglePassword = () => {
     setShowPassword((prev) => !prev);
   };
 
+  // Client-side form validation before making backend call
   const validateForm = () => {
     const newErrors = {};
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+    // Check email
     if (!formData.email.trim()) {
       newErrors.email = "Email is required";
     } else if (!emailRegex.test(formData.email.trim())) {
       newErrors.email = "Please enter a valid email address";
     }
 
+    // Check password
     if (!formData.password) {
       newErrors.password = "Password is required";
     }
@@ -70,6 +76,7 @@ const Login = () => {
     return Object.keys(newErrors).length === 0;
   };
 
+  // Submit login credentials to backend
   const handleLogin = async (e) => {
     e.preventDefault();
     setErrorMessage("");
@@ -82,6 +89,7 @@ const Login = () => {
 
     try {
       await login(formData.email.trim(), formData.password);
+      // On success, redirect user to the social feed
       navigate("/home");
     } catch (err) {
       setErrorMessage(
@@ -97,21 +105,28 @@ const Login = () => {
       title="Welcome back"
       subtitle="Sign in to your account"
     >
+      {/* Top error alert */}
       {errorMessage && (
-        <Alert severity="error" sx={{ mb: 2.5, borderRadius: 1.5 }}>
+        <Alert severity="error" sx={{ mb: 2.5, borderRadius: "8px" }}>
           {errorMessage}
         </Alert>
       )}
 
       <Box component="form" onSubmit={handleLogin} noValidate>
         <Stack spacing={2.5}>
-          {/* Email Field */}
+          {/* Email input field */}
           <Box>
             <Typography
               variant="body2"
               component="label"
               htmlFor="email"
-              sx={{ fontWeight: 600, color: "text.primary", mb: 0.75, display: "block" }}
+              sx={{
+                fontWeight: 600,
+                color: "#F5F7FA",
+                mb: 0.75,
+                display: "block",
+                fontSize: "0.875rem",
+              }}
             >
               Email
             </Typography>
@@ -119,6 +134,8 @@ const Login = () => {
               id="email"
               name="email"
               type="email"
+              fullWidth
+              size="small"
               autoComplete="email"
               autoFocus
               placeholder="you@example.com"
@@ -130,13 +147,19 @@ const Login = () => {
             />
           </Box>
 
-          {/* Password Field */}
+          {/* Password input field with show/hide toggle */}
           <Box>
             <Typography
               variant="body2"
               component="label"
               htmlFor="password"
-              sx={{ fontWeight: 600, color: "text.primary", mb: 0.75, display: "block" }}
+              sx={{
+                fontWeight: 600,
+                color: "#F5F7FA",
+                mb: 0.75,
+                display: "block",
+                fontSize: "0.875rem",
+              }}
             >
               Password
             </Typography>
@@ -144,6 +167,8 @@ const Login = () => {
               id="password"
               name="password"
               type={showPassword ? "text" : "password"}
+              fullWidth
+              size="small"
               autoComplete="current-password"
               placeholder="Enter your password"
               value={formData.password}
@@ -160,7 +185,7 @@ const Login = () => {
                         onClick={handleTogglePassword}
                         edge="end"
                         size="small"
-                        sx={{ color: "text.secondary" }}
+                        sx={{ color: "#7F8A9D" }}
                       >
                         {showPassword ? (
                           <VisibilityOff fontSize="small" />
@@ -175,7 +200,7 @@ const Login = () => {
             />
           </Box>
 
-          {/* Submit Button */}
+          {/* Sign in button */}
           <Button
             type="submit"
             variant="contained"
@@ -187,6 +212,8 @@ const Login = () => {
               mt: 1,
               py: 1.25,
               fontSize: "0.9375rem",
+              borderRadius: "8px",
+              fontWeight: 600,
             }}
           >
             {isSubmitting ? "Signing in..." : "Sign in"}
@@ -194,9 +221,9 @@ const Login = () => {
         </Stack>
       </Box>
 
-      {/* Footer Link */}
+      {/* Link to signup page */}
       <Box sx={{ mt: 3, textAlign: "center" }}>
-        <Typography variant="body2" color="text.secondary">
+        <Typography variant="body2" sx={{ color: "#A7B1C2" }}>
           Don't have an account?{" "}
           <Link
             component={RouterLink}
@@ -204,7 +231,7 @@ const Login = () => {
             underline="hover"
             sx={{
               fontWeight: 600,
-              color: "primary.main",
+              color: "#3B82F6",
             }}
           >
             Sign up

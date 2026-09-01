@@ -17,34 +17,35 @@ import SendIcon from "@mui/icons-material/Send";
 import { useAuth } from "../context/AuthContext";
 import { createPost } from "../services/postService";
 
+// Component that allows logged-in users to compose and publish posts
 const CreatePost = ({ onPostCreated }) => {
   const { user, token } = useAuth();
   const fileInputRef = useRef(null);
 
-  // Form State
+  // Form input state
   const [text, setText] = useState("");
   const [selectedImage, setSelectedImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
 
-  // UI State
+  // Loading and error states
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
   const userInitial = user?.username ? user.username.charAt(0).toUpperCase() : "U";
 
-  // Handle Image Selection with validation
+  // Handles selecting an image from the user's computer
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    // Validate file type
+    // Check file extension
     const validTypes = ["image/jpeg", "image/png", "image/webp", "image/jpg"];
     if (!validTypes.includes(file.type)) {
       setErrorMessage("Please select a JPG, JPEG, PNG, or WebP image.");
       return;
     }
 
-    // Validate file size (5MB)
+    // Check file size (max 5MB)
     const maxSizeBytes = 5 * 1024 * 1024;
     if (file.size > maxSizeBytes) {
       setErrorMessage("Image size must be less than 5MB.");
@@ -53,10 +54,11 @@ const CreatePost = ({ onPostCreated }) => {
 
     setErrorMessage("");
     setSelectedImage(file);
+    // Create temporary browser URL to preview image before uploading
     setImagePreview(URL.createObjectURL(file));
   };
 
-  // Remove Selected Image
+  // Clears the selected image and its preview
   const handleRemoveImage = () => {
     setSelectedImage(null);
     if (imagePreview) {
@@ -68,14 +70,14 @@ const CreatePost = ({ onPostCreated }) => {
     }
   };
 
-  // Handle Form Submit
+  // Submits the new post to the backend
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMessage("");
 
     const trimmedText = text.trim();
 
-    // Validate: At least text OR image must exist
+    // User must write text OR attach an image
     if (!trimmedText && !selectedImage) {
       setErrorMessage("Write something or add an image before posting.");
       return;
@@ -84,6 +86,7 @@ const CreatePost = ({ onPostCreated }) => {
     setIsSubmitting(true);
 
     try {
+      // Use FormData so we can upload both text and binary image file
       const formData = new FormData();
       if (trimmedText) {
         formData.append("text", trimmedText);
@@ -92,14 +95,13 @@ const CreatePost = ({ onPostCreated }) => {
         formData.append("image", selectedImage);
       }
 
-      // API call to backend
       const createdPost = await createPost(formData, token);
 
-      // Reset form upon success
+      // Reset form after successful post
       setText("");
       handleRemoveImage();
 
-      // Trigger callback to prepend new post to feed
+      // Notify parent component to prepend new post to feed
       if (onPostCreated) {
         onPostCreated(createdPost);
       }
@@ -112,35 +114,40 @@ const CreatePost = ({ onPostCreated }) => {
     }
   };
 
+  // Post button is disabled when both text and image are empty
   const isPostDisabled = !text.trim() && !selectedImage;
 
   return (
     <Paper
       variant="outlined"
       sx={{
-        p: { xs: 2, sm: 2.5 },
-        borderRadius: 2,
-        backgroundColor: "background.paper",
-        borderColor: "divider",
-        transition: "box-shadow 0.2s ease-in-out",
+        p: { xs: 2.25, sm: 3 },
+        borderRadius: "14px",
+        backgroundColor: "#111827",
+        borderColor: "#253247",
+        transition: "border-color 150ms ease-in-out",
+        "&:hover": {
+          borderColor: "#31405A",
+        },
       }}
     >
-      {/* Header Label */}
+      {/* Header section label */}
       <Typography
         variant="subtitle2"
         sx={{
-          fontWeight: 600,
-          color: "text.secondary",
+          fontWeight: 650,
+          color: "#7F8A9D",
           textTransform: "uppercase",
-          letterSpacing: "0.05em",
+          letterSpacing: "0.06em",
           fontSize: "0.75rem",
-          mb: 1.5,
+          mb: 2,
+          userSelect: "none",
         }}
       >
         Create a post
       </Typography>
 
-      {/* Error Alert */}
+      {/* Error alert if validation or request fails */}
       {errorMessage && (
         <Alert
           severity="error"
@@ -152,17 +159,19 @@ const CreatePost = ({ onPostCreated }) => {
       )}
 
       <Box component="form" onSubmit={handleSubmit} noValidate>
-        <Stack spacing={1.5}>
-          {/* Composer Body: Avatar + Seamless Auto-Growing Input */}
-          <Stack direction="row" spacing={1.5} alignItems="flex-start">
+        <Stack spacing={1.75}>
+          {/* Avatar + Auto-growing text area */}
+          <Stack direction="row" spacing={1.75} alignItems="flex-start">
             <Avatar
               sx={{
-                bgcolor: "primary.main",
-                width: 38,
-                height: 38,
-                fontSize: "0.95rem",
+                bgcolor: "#3B82F6",
+                color: "#FFFFFF",
+                width: 44,
+                height: 44,
+                fontSize: "1rem",
                 fontWeight: 600,
                 mt: 0.25,
+                flexShrink: 0,
               }}
             >
               {userInitial}
@@ -180,17 +189,18 @@ const CreatePost = ({ onPostCreated }) => {
                 }}
                 disabled={isSubmitting}
                 sx={{
-                  color: "text.primary",
-                  fontSize: "0.9375rem",
+                  color: "#F5F7FA",
+                  fontSize: "1.03125rem",
                   lineHeight: 1.55,
+                  p: 0,
                   "& textarea": {
-                    minHeight: "44px",
-                    maxHeight: "calc(100vh - 300px)",
+                    minHeight: "72px",
+                    maxHeight: "55vh",
                     overflowY: "auto !important",
                     resize: "none",
                     p: 0,
                     scrollbarWidth: "thin",
-                    scrollbarColor: "#243248 transparent",
+                    scrollbarColor: "#253247 transparent",
                     "&::-webkit-scrollbar": {
                       width: "5px",
                     },
@@ -198,15 +208,15 @@ const CreatePost = ({ onPostCreated }) => {
                       background: "transparent",
                     },
                     "&::-webkit-scrollbar-thumb": {
-                      backgroundColor: "#243248",
+                      backgroundColor: "#253247",
                       borderRadius: "4px",
                     },
                     "&::-webkit-scrollbar-thumb:hover": {
-                      backgroundColor: "#3b82f6",
+                      backgroundColor: "#3B82F6",
                     },
                     "&::placeholder": {
-                      color: "text.secondary",
-                      opacity: 0.7,
+                      color: "#7F8A9D",
+                      opacity: 1,
                     },
                   },
                 }}
@@ -214,17 +224,16 @@ const CreatePost = ({ onPostCreated }) => {
             </Box>
           </Stack>
 
-          {/* Image Preview - Placed after text content */}
+          {/* Selected image preview */}
           {imagePreview && (
             <Box
               sx={{
                 position: "relative",
                 mt: 1,
-                borderRadius: 1.5,
+                borderRadius: "10px",
                 overflow: "hidden",
-                border: "1px solid",
-                borderColor: "divider",
-                backgroundColor: "#0d131f",
+                border: "1px solid #253247",
+                backgroundColor: "#0B0F17",
                 display: "flex",
                 justifyContent: "center",
                 alignItems: "center",
@@ -236,42 +245,45 @@ const CreatePost = ({ onPostCreated }) => {
                 alt="Selected upload preview"
                 sx={{
                   width: "100%",
-                  maxHeight: 360,
+                  maxHeight: 460,
                   objectFit: "contain",
                   display: "block",
                 }}
               />
 
-              {/* Remove Image Button */}
+              {/* Button to remove selected image */}
               <IconButton
                 size="small"
                 aria-label="Remove image"
                 onClick={handleRemoveImage}
                 sx={{
                   position: "absolute",
-                  top: 8,
-                  right: 8,
-                  backgroundColor: "rgba(15, 23, 42, 0.8)",
-                  color: "#f8fafc",
+                  top: 10,
+                  right: 10,
+                  backgroundColor: "rgba(11, 15, 23, 0.85)",
+                  color: "#F5F7FA",
+                  border: "1px solid #253247",
+                  p: 0.75,
                   "&:hover": {
-                    backgroundColor: "rgba(15, 23, 42, 0.95)",
+                    backgroundColor: "rgba(11, 15, 23, 1)",
+                    borderColor: "#31405A",
                   },
                 }}
               >
-                <CloseIcon fontSize="small" />
+                <CloseIcon sx={{ fontSize: "1.05rem" }} />
               </IconButton>
             </Box>
           )}
 
-          <Divider sx={{ my: 0.75 }} />
+          <Divider sx={{ my: 0.75, borderColor: "#253247" }} />
 
-          {/* Composer Action Bar */}
+          {/* Bottom action row */}
           <Stack
             direction="row"
             justifyContent="space-between"
             alignItems="center"
           >
-            {/* Hidden native file input */}
+            {/* Hidden HTML file input */}
             <input
               type="file"
               ref={fileInputRef}
@@ -280,20 +292,22 @@ const CreatePost = ({ onPostCreated }) => {
               style={{ display: "none" }}
             />
 
-            {/* Add Image Button */}
+            {/* Button to trigger file input */}
             <Button
               variant="text"
-              startIcon={<ImageOutlinedIcon />}
+              startIcon={<ImageOutlinedIcon sx={{ fontSize: "1.15rem !important" }} />}
               onClick={() => fileInputRef.current?.click()}
               disabled={isSubmitting}
               sx={{
-                color: selectedImage ? "primary.main" : "text.secondary",
+                color: selectedImage ? "#3B82F6" : "#A7B1C2",
                 fontSize: "0.875rem",
                 textTransform: "none",
-                fontWeight: 500,
-                px: 1,
+                fontWeight: 600,
+                px: 1.25,
+                py: 0.75,
+                borderRadius: "8px",
                 "&:hover": {
-                  color: "primary.main",
+                  color: "#3B82F6",
                   backgroundColor: "rgba(59, 130, 246, 0.08)",
                 },
               }}
@@ -301,17 +315,19 @@ const CreatePost = ({ onPostCreated }) => {
               {selectedImage ? "Change image" : "Add image"}
             </Button>
 
-            {/* Submit Post Button */}
+            {/* Post button */}
             <Button
               type="submit"
               variant="contained"
               color="primary"
               disabled={isPostDisabled || isSubmitting}
-              endIcon={<SendIcon sx={{ fontSize: "0.9rem !important" }} />}
+              endIcon={<SendIcon sx={{ fontSize: "0.95rem !important" }} />}
               sx={{
-                px: 2.5,
-                py: 0.75,
+                px: 2.75,
+                py: 0.85,
                 fontWeight: 600,
+                borderRadius: "8px",
+                fontSize: "0.875rem",
               }}
             >
               {isSubmitting ? "Posting..." : "Post"}

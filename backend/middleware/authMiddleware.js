@@ -1,36 +1,36 @@
 import jwt from "jsonwebtoken";
 
-// Middleware to verify JWT token and protect private routes
+// Middleware to check if user is logged in (has a valid JWT token)
 export const authMiddleware = (req, res, next) => {
   try {
-    // 1. Get Authorization header (format: "Bearer <token>")
+    // 1. Get the Authorization header (e.g., "Bearer eyJhbGciOi...")
     const authHeader = req.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return res.status(401).json({
-        message: "Access denied. No token provided.",
+        message: "Access denied. Please log in first.",
       });
     }
 
-    // 2. Extract token from header
+    // 2. Extract the actual token string after "Bearer "
     const token = authHeader.split(" ")[1];
 
-    // 3. Verify token with JWT_SECRET
+    // 3. Verify token with our secret key
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // 4. Attach decoded payload (contains userId) to request object
+    // 4. Attach decoded user data (contains userId) to req.user
     req.user = decoded;
 
-    // 5. Proceed to the next middleware or controller
+    // 5. Everything looks good, proceed to next step
     next();
   } catch (error) {
     return res.status(401).json({
-      message: "Invalid or expired token. Please log in again.",
+      message: "Your session has expired. Please log in again.",
     });
   }
 };
 
-// Optional auth middleware: extracts user if token exists, but doesn't block public access
+// Optional auth helper: reads user if logged in, but doesn't reject visitors
 export const optionalAuthMiddleware = (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
@@ -40,7 +40,7 @@ export const optionalAuthMiddleware = (req, res, next) => {
       req.user = decoded;
     }
   } catch (error) {
-    // Ignore error for optional authentication
+    // If token is invalid or missing, user is just treated as guest
     req.user = null;
   }
   next();

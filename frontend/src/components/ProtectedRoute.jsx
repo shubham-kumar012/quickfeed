@@ -3,10 +3,11 @@ import { Navigate } from "react-router-dom";
 import { Box, CircularProgress } from "@mui/material";
 import { useAuth } from "../context/AuthContext";
 
+// Route wrapper that only allows logged-in users to view the page
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
 
-  // Show minimal loading state while verifying existing token on app start
+  // While checking if user is logged in, show a simple spinner
   if (loading) {
     return (
       <Box
@@ -15,20 +16,20 @@ const ProtectedRoute = ({ children }) => {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          backgroundColor: "background.default",
+          backgroundColor: "#0B0F17",
         }}
       >
-        <CircularProgress size={32} sx={{ color: "primary.main" }} />
+        <CircularProgress size={32} sx={{ color: "#3B82F6" }} />
       </Box>
     );
   }
 
-  // If user is not authenticated, redirect to /login
+  // Not logged in? Send them to the login page
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
 
-  // If authenticated, render protected page
+  // Logged in! Render the requested page
   return children;
 };
 

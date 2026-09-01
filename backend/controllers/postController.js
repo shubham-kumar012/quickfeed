@@ -3,14 +3,14 @@ import sharp from "sharp";
 import cloudinary from "../config/cloudinary.js";
 import Post from "../models/Post.js";
 
-// Helper function to upload an in-memory buffer to Cloudinary via upload_stream
+// Helper function to upload an image buffer directly to Cloudinary
 const uploadBufferToCloudinary = (buffer) => {
   return new Promise((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
       {
         folder: "mini-social-app/posts",
         resource_type: "image",
-        format: "webp",
+        format: "webp", // Save in lightweight webp format
       },
       (error, result) => {
         if (error) {
@@ -23,17 +23,16 @@ const uploadBufferToCloudinary = (buffer) => {
   });
 };
 
-// @desc    Create a new post (text, image, or text + image)
-// @route   POST /api/posts
-// @access  Private
+// Create a new post (supports text, image, or both)
 export const createPost = async (req, res) => {
   try {
     const text = req.body.text ? req.body.text.trim() : null;
     let imageUrl = null;
 
-    // 1. Process and upload image if provided in request
+    // Step 1: If user attached an image, optimize it with Sharp and upload to Cloudinary
     if (req.file && req.file.buffer) {
       try {
+        // Resize image if it's too large and convert to WebP to save bandwidth
         const optimizedBuffer = await sharp(req.file.buffer)
           .resize({
             width: 1600,
@@ -44,24 +43,25 @@ export const createPost = async (req, res) => {
           .webp({ quality: 80 })
           .toBuffer();
 
+        // Upload in-memory buffer directly to Cloudinary
         const uploadResult = await uploadBufferToCloudinary(optimizedBuffer);
         imageUrl = uploadResult.secure_url;
       } catch (sharpError) {
-        console.error("Image processing/upload error:", sharpError);
+        console.error("Image processing error:", sharpError);
         return res.status(400).json({
           message: "Failed to process image. Please upload a valid image file.",
         });
       }
     }
 
-    // 2. Validate that at least text OR image is present
+    // Step 2: Validate that user wrote text OR uploaded an image
     if (!text && !imageUrl) {
       return res.status(400).json({
         message: "Write something or add an image before posting.",
       });
     }
 
-    // 3. Create and save post in MongoDB
+    // Step 3: Save post to MongoDB
     const newPost = await Post.create({
       user: req.user.userId,
       text: text || null,
@@ -70,10 +70,10 @@ export const createPost = async (req, res) => {
       comments: [],
     });
 
-    // 4. Populate author's username
+    // Step 4: Populate author username
     await newPost.populate("user", "username");
 
-    // 5. Format response for frontend
+    // Step 5: Format response for frontend state
     const formattedPost = {
       _id: newPost._id,
       text: newPost.text,
@@ -102,20 +102,20 @@ export const createPost = async (req, res) => {
   }
 };
 
-// @desc    Get all public posts (newest first)
-// @route   GET /api/posts
-// @access  Public (Optional auth for personalized liked state)
+// Get all public posts (newest first)
 export const getPosts = async (req, res) => {
   try {
     const currentUserId = req.user?.userId ? req.user.userId.toString() : null;
 
-    // Retrieve all posts sorted newest first with populated author and comment user info
+    // Fetch all posts, populate author and commenter usernames, sorted by newest
     const posts = await Post.find()
       .populate("user", "username")
       .populate("comments.user", "username")
       .sort({ createdAt: -1 });
 
+    // Format posts with liked status and counts
     const formattedPosts = posts.map((post) => {
+      // Check if logged-in user has liked this post
       const isLiked = currentUserId
         ? post.likedBy.some((id) => id.toString() === currentUserId)
         : false;
@@ -160,9 +160,7 @@ export const getPosts = async (req, res) => {
   }
 };
 
-// @desc    Like a post
-// @route   POST /api/posts/:postId/like
-// @access  Private
+// Like a post
 export const likePost = async (req, res) => {
   try {
     const { postId } = req.params;
@@ -173,7 +171,7 @@ export const likePost = async (req, res) => {
 
     const userId = req.user.userId;
 
-    // Add user ID to likedBy array without duplicates using $addToSet
+    // Use $addToSet to add userId to likedBy without creating duplicates
     const post = await Post.findByIdAndUpdate(
       postId,
       { $addToSet: { likedBy: userId } },
@@ -196,9 +194,7 @@ export const likePost = async (req, res) => {
   }
 };
 
-// @desc    Unlike a post
-// @route   DELETE /api/posts/:postId/like
-// @access  Private
+// Unlike a post
 export const unlikePost = async (req, res) => {
   try {
     const { postId } = req.params;
@@ -209,7 +205,7 @@ export const unlikePost = async (req, res) => {
 
     const userId = req.user.userId;
 
-    // Remove user ID from likedBy array using $pull
+    // Use $pull to remove userId from likedBy array
     const post = await Post.findByIdAndUpdate(
       postId,
       { $pull: { likedBy: userId } },
@@ -232,9 +228,7 @@ export const unlikePost = async (req, res) => {
   }
 };
 
-// @desc    Add a comment to a post
-// @route   POST /api/posts/:postId/comments
-// @access  Private
+// Add a comment to a post
 export const addComment = async (req, res) => {
   try {
     const { postId } = req.params;
@@ -246,6 +240,7 @@ export const addComment = async (req, res) => {
     const { text } = req.body;
     const trimmedText = text ? text.trim() : "";
 
+    // Validate comment is not empty
     if (!trimmedText) {
       return res.status(400).json({ message: "Comment cannot be empty" });
     }
@@ -259,7 +254,7 @@ export const addComment = async (req, res) => {
       return res.status(404).json({ message: "Post not found" });
     }
 
-    // Push new embedded comment into post's comments array
+    // Append new comment to embedded comments array
     post.comments.push({
       user: req.user.userId,
       text: trimmedText,
@@ -268,7 +263,7 @@ export const addComment = async (req, res) => {
 
     await post.save();
 
-    // Populate the newly added comment's user username
+    // Populate commenter username before returning
     await post.populate("comments.user", "username");
 
     const createdComment = post.comments[post.comments.length - 1];
@@ -293,9 +288,7 @@ export const addComment = async (req, res) => {
   }
 };
 
-// @desc    Delete a comment from a post (only author can delete their own comment)
-// @route   DELETE /api/posts/:postId/comments/:commentId
-// @access  Private
+// Delete a comment (users can only delete their own comments)
 export const deleteComment = async (req, res) => {
   try {
     const { postId, commentId } = req.params;
@@ -309,20 +302,20 @@ export const deleteComment = async (req, res) => {
       return res.status(404).json({ message: "Post not found" });
     }
 
-    // Find the comment in post.comments
+    // Find the comment in the post's embedded comments array
     const comment = post.comments.id(commentId);
     if (!comment) {
       return res.status(404).json({ message: "Comment not found" });
     }
 
-    // Authorization: User can ONLY delete their own comment
+    // Security check: Make sure user owns this comment
     if (comment.user.toString() !== req.user.userId.toString()) {
       return res.status(403).json({
         message: "You are only allowed to delete your own comments.",
       });
     }
 
-    // Remove comment from array
+    // Pull comment and save post
     post.comments.pull({ _id: commentId });
     await post.save();
 

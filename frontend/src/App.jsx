@@ -7,12 +7,13 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Home from "./pages/Home";
 
+// Main App component configuring authentication provider and page routing
 function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          {/* Public Auth Routes (Redirect to /home if already logged in) */}
+          {/* Public Auth Routes: logged-in users get redirected to /home */}
           <Route
             path="/login"
             element={
@@ -30,7 +31,7 @@ function App() {
             }
           />
 
-          {/* Protected Application Routes (Redirect to /login if unauthenticated) */}
+          {/* Protected Routes: visitors get redirected to /login */}
           <Route
             path="/home"
             element={
@@ -40,7 +41,7 @@ function App() {
             }
           />
 
-          {/* Default Redirects */}
+          {/* Default fallback redirects */}
           <Route path="/" element={<Navigate to="/home" replace />} />
           <Route path="*" element={<Navigate to="/home" replace />} />
         </Routes>

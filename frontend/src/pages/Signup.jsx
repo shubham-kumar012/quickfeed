@@ -16,11 +16,12 @@ import { Link as RouterLink, useNavigate } from "react-router-dom";
 import AuthLayout from "../components/AuthLayout";
 import { useAuth } from "../context/AuthContext";
 
+// Signup page component
 const Signup = () => {
   const navigate = useNavigate();
   const { signup } = useAuth();
 
-  // Form State
+  // Form input state
   const [formData, setFormData] = useState({
     username: "",
     email: "",
@@ -28,13 +29,14 @@ const Signup = () => {
     confirmPassword: "",
   });
 
-  // UI State
+  // Password visibility and form error state
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState({});
   const [errorMessage, setErrorMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Update form inputs as user types
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -42,7 +44,7 @@ const Signup = () => {
       [name]: value,
     }));
 
-    // Clear field-specific error upon typing
+    // Clear error message when user starts typing again
     if (errors[name]) {
       setErrors((prev) => ({
         ...prev,
@@ -51,12 +53,13 @@ const Signup = () => {
     }
   };
 
+  // Client-side form validation before making backend call
   const validateForm = () => {
     const newErrors = {};
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const usernameRegex = /^[a-zA-Z0-9_]+$/;
 
-    // Username validation: No spaces, alphanumeric and underscores allowed, 3-30 chars
+    // Check username: no spaces, alphanumeric with underscores, 3-30 characters
     const trimmedUsername = formData.username.trim();
     if (!trimmedUsername) {
       newErrors.username = "Username is required";
@@ -70,21 +73,21 @@ const Signup = () => {
       newErrors.username = "Username can only contain letters, numbers, and underscores";
     }
 
-    // Email validation
+    // Check email format
     if (!formData.email.trim()) {
       newErrors.email = "Email is required";
     } else if (!emailRegex.test(formData.email.trim())) {
       newErrors.email = "Please enter a valid email address";
     }
 
-    // Password validation
+    // Check password length
     if (!formData.password) {
       newErrors.password = "Password is required";
     } else if (formData.password.length < 6) {
       newErrors.password = "Password must be at least 6 characters";
     }
 
-    // Confirm Password validation
+    // Check password confirmation match
     if (!formData.confirmPassword) {
       newErrors.confirmPassword = "Please confirm your password";
     } else if (formData.password !== formData.confirmPassword) {
@@ -95,6 +98,7 @@ const Signup = () => {
     return Object.keys(newErrors).length === 0;
   };
 
+  // Submit signup form to backend
   const handleSignup = async (e) => {
     e.preventDefault();
     setErrorMessage("");
@@ -111,6 +115,7 @@ const Signup = () => {
         formData.email.trim(),
         formData.password
       );
+      // On success, redirect user directly into the feed
       navigate("/home");
     } catch (err) {
       setErrorMessage(
@@ -124,29 +129,38 @@ const Signup = () => {
   return (
     <AuthLayout
       title="Create account"
-      subtitle="Join Socially to share and connect"
+      subtitle="Join QuickFeed to share and connect"
     >
+      {/* Top error alert */}
       {errorMessage && (
-        <Alert severity="error" sx={{ mb: 2.5, borderRadius: 1.5 }}>
+        <Alert severity="error" sx={{ mb: 2.5, borderRadius: "8px" }}>
           {errorMessage}
         </Alert>
       )}
 
       <Box component="form" onSubmit={handleSignup} noValidate>
         <Stack spacing={2.25}>
-          {/* Username Field */}
+          {/* 1. Username input field */}
           <Box>
             <Typography
               variant="body2"
               component="label"
               htmlFor="username"
-              sx={{ fontWeight: 600, color: "text.primary", mb: 0.75, display: "block" }}
+              sx={{
+                fontWeight: 600,
+                color: "#F5F7FA",
+                mb: 0.75,
+                display: "block",
+                fontSize: "0.875rem",
+              }}
             >
               Username
             </Typography>
             <TextField
               id="username"
               name="username"
+              fullWidth
+              size="small"
               autoComplete="username"
               autoFocus
               placeholder="e.g. shubham_123"
@@ -158,13 +172,19 @@ const Signup = () => {
             />
           </Box>
 
-          {/* Email Field */}
+          {/* 2. Email input field */}
           <Box>
             <Typography
               variant="body2"
               component="label"
               htmlFor="email"
-              sx={{ fontWeight: 600, color: "text.primary", mb: 0.75, display: "block" }}
+              sx={{
+                fontWeight: 600,
+                color: "#F5F7FA",
+                mb: 0.75,
+                display: "block",
+                fontSize: "0.875rem",
+              }}
             >
               Email
             </Typography>
@@ -172,6 +192,8 @@ const Signup = () => {
               id="email"
               name="email"
               type="email"
+              fullWidth
+              size="small"
               autoComplete="email"
               placeholder="you@example.com"
               value={formData.email}
@@ -182,13 +204,19 @@ const Signup = () => {
             />
           </Box>
 
-          {/* Password Field */}
+          {/* 3. Password input field */}
           <Box>
             <Typography
               variant="body2"
               component="label"
               htmlFor="password"
-              sx={{ fontWeight: 600, color: "text.primary", mb: 0.75, display: "block" }}
+              sx={{
+                fontWeight: 600,
+                color: "#F5F7FA",
+                mb: 0.75,
+                display: "block",
+                fontSize: "0.875rem",
+              }}
             >
               Password
             </Typography>
@@ -196,6 +224,8 @@ const Signup = () => {
               id="password"
               name="password"
               type={showPassword ? "text" : "password"}
+              fullWidth
+              size="small"
               autoComplete="new-password"
               placeholder="At least 6 characters"
               value={formData.password}
@@ -212,7 +242,7 @@ const Signup = () => {
                         onClick={() => setShowPassword((prev) => !prev)}
                         edge="end"
                         size="small"
-                        sx={{ color: "text.secondary" }}
+                        sx={{ color: "#7F8A9D" }}
                       >
                         {showPassword ? (
                           <VisibilityOff fontSize="small" />
@@ -227,13 +257,19 @@ const Signup = () => {
             />
           </Box>
 
-          {/* Confirm Password Field */}
+          {/* 4. Confirm Password input field */}
           <Box>
             <Typography
               variant="body2"
               component="label"
               htmlFor="confirmPassword"
-              sx={{ fontWeight: 600, color: "text.primary", mb: 0.75, display: "block" }}
+              sx={{
+                fontWeight: 600,
+                color: "#F5F7FA",
+                mb: 0.75,
+                display: "block",
+                fontSize: "0.875rem",
+              }}
             >
               Confirm Password
             </Typography>
@@ -241,6 +277,8 @@ const Signup = () => {
               id="confirmPassword"
               name="confirmPassword"
               type={showConfirmPassword ? "text" : "password"}
+              fullWidth
+              size="small"
               autoComplete="new-password"
               placeholder="Re-enter your password"
               value={formData.confirmPassword}
@@ -257,7 +295,7 @@ const Signup = () => {
                         onClick={() => setShowConfirmPassword((prev) => !prev)}
                         edge="end"
                         size="small"
-                        sx={{ color: "text.secondary" }}
+                        sx={{ color: "#7F8A9D" }}
                       >
                         {showConfirmPassword ? (
                           <VisibilityOff fontSize="small" />
@@ -272,7 +310,7 @@ const Signup = () => {
             />
           </Box>
 
-          {/* Submit Button */}
+          {/* Submit button */}
           <Button
             type="submit"
             variant="contained"
@@ -284,6 +322,8 @@ const Signup = () => {
               mt: 1,
               py: 1.25,
               fontSize: "0.9375rem",
+              borderRadius: "8px",
+              fontWeight: 600,
             }}
           >
             {isSubmitting ? "Creating account..." : "Create account"}
@@ -291,9 +331,9 @@ const Signup = () => {
         </Stack>
       </Box>
 
-      {/* Footer Link */}
+      {/* Link to login page */}
       <Box sx={{ mt: 3, textAlign: "center" }}>
-        <Typography variant="body2" color="text.secondary">
+        <Typography variant="body2" sx={{ color: "#A7B1C2" }}>
           Already have an account?{" "}
           <Link
             component={RouterLink}
@@ -301,7 +341,7 @@ const Signup = () => {
             underline="hover"
             sx={{
               fontWeight: 600,
-              color: "primary.main",
+              color: "#3B82F6",
             }}
           >
             Sign in

@@ -2,20 +2,19 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 
-// Helper function to generate JWT token
+// Helper function to create a JWT token with the user's ID
 const generateToken = (userId) => {
   return jwt.sign({ userId }, process.env.JWT_SECRET, {
-    expiresIn: "7d",
+    expiresIn: "7d", // Token valid for 7 days
   });
 };
 
-// @desc    Register a new user
-// @route   POST /api/auth/signup
+// Register a new user
 export const signup = async (req, res) => {
   try {
     const { username, email, password } = req.body;
 
-    // 1. Basic validation
+    // Step 1: Make sure all required fields are provided
     if (!username || !email || !password) {
       return res.status(400).json({
         message: "Please provide username, email, and password",
@@ -24,19 +23,21 @@ export const signup = async (req, res) => {
 
     const trimmedUsername = username.trim();
 
-    // Username format validation (no spaces, alphanumeric + underscores, 3-30 chars)
+    // Step 2: Validate username length (between 3 and 30 characters)
     if (trimmedUsername.length < 3 || trimmedUsername.length > 30) {
       return res.status(400).json({
         message: "Username must be between 3 and 30 characters long",
       });
     }
 
+    // Step 3: Check that username does not contain spaces
     if (/\s/.test(username)) {
       return res.status(400).json({
         message: "Username cannot contain spaces",
       });
     }
 
+    // Step 4: Allow only alphanumeric characters and underscores
     const usernameRegex = /^[a-zA-Z0-9_]+$/;
     if (!usernameRegex.test(trimmedUsername)) {
       return res.status(400).json({
@@ -44,14 +45,14 @@ export const signup = async (req, res) => {
       });
     }
 
-    // Password validation
+    // Step 5: Password must be at least 6 characters long
     if (password.length < 6) {
       return res.status(400).json({
         message: "Password must be at least 6 characters long",
       });
     }
 
-    // 2. Check if user already exists with this email
+    // Step 6: Check if email is already registered in our database
     const normalizedEmail = email.toLowerCase().trim();
     const existingUser = await User.findOne({ email: normalizedEmail });
 
@@ -61,21 +62,21 @@ export const signup = async (req, res) => {
       });
     }
 
-    // 3. Hash password with bcrypt (10 salt rounds)
+    // Step 7: Hash the password using bcrypt for security
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-    // 4. Create and save new user in MongoDB
+    // Step 8: Save the new user in MongoDB
     const newUser = await User.create({
       username: trimmedUsername,
       email: normalizedEmail,
       password: hashedPassword,
     });
 
-    // 5. Generate JWT token
+    // Step 9: Generate JWT token for the user
     const token = generateToken(newUser._id);
 
-    // 6. Return response (never expose password)
+    // Step 10: Send back the token and user details (without password)
     return res.status(201).json({
       message: "Account created successfully",
       token,
@@ -93,31 +94,30 @@ export const signup = async (req, res) => {
   }
 };
 
-// @desc    Authenticate user & get token
-// @route   POST /api/auth/login
+// Log in an existing user
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // 1. Basic validation
+    // Step 1: Check if email and password were sent
     if (!email || !password) {
       return res.status(400).json({
         message: "Please provide email and password",
       });
     }
 
-    // 2. Find user by email
+    // Step 2: Find user by normalized email
     const normalizedEmail = email.toLowerCase().trim();
     const user = await User.findOne({ email: normalizedEmail });
 
     if (!user) {
-      // Generic error message for security (don't reveal whether email exists)
+      // Return generic message so attackers cannot guess registered emails
       return res.status(401).json({
         message: "Invalid email or password",
       });
     }
 
-    // 3. Compare provided password with hashed password in database
+    // Step 3: Compare entered password with hashed password in database
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {
@@ -126,10 +126,10 @@ export const login = async (req, res) => {
       });
     }
 
-    // 4. Generate JWT token
+    // Step 4: Password matches! Generate JWT token
     const token = generateToken(user._id);
 
-    // 5. Return user info and token
+    // Step 5: Return user profile and token
     return res.status(200).json({
       message: "Login successful",
       token,
@@ -147,11 +147,10 @@ export const login = async (req, res) => {
   }
 };
 
-// @desc    Get currently logged-in user profile
-// @route   GET /api/auth/me
+// Get profile of currently logged-in user
 export const getMe = async (req, res) => {
   try {
-    // req.user is populated by authMiddleware
+    // req.user is attached by authMiddleware after verifying token
     const user = await User.findById(req.user.userId).select("-password");
 
     if (!user) {

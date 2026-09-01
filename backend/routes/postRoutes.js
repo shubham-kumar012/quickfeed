@@ -12,17 +12,17 @@ import { handleImageUpload } from "../middleware/uploadMiddleware.js";
 
 const router = express.Router();
 
-// Public route: Get all posts (optional authentication for user's liked status)
+// Get public posts feed (uses optional auth so we know if logged-in user liked each post)
 router.get("/", optionalAuthMiddleware, getPosts);
 
-// Protected route: Create post (with memory-buffered image upload)
+// Create a new post (must be logged in + processes image if uploaded)
 router.post("/", authMiddleware, handleImageUpload, createPost);
 
-// Protected routes: Like / Unlike a post
+// Like or Unlike a post
 router.post("/:postId/like", authMiddleware, likePost);
 router.delete("/:postId/like", authMiddleware, unlikePost);
 
-// Protected routes: Add & Delete comments on a post
+// Add a comment or Delete your own comment
 router.post("/:postId/comments", authMiddleware, addComment);
 router.delete("/:postId/comments/:commentId", authMiddleware, deleteComment);
 

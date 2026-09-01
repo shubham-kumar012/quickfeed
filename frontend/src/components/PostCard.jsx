@@ -27,17 +27,18 @@ import {
   deleteComment,
 } from "../services/postService";
 
+// Card component displaying an individual social post with like, comment, and delete interactions
 const PostCard = ({ post, onPostUpdated }) => {
   if (!post) return null;
 
   const { user, token } = useAuth();
 
-  // Local Like & Comment State (Initialized from post prop)
+  // Local state for Likes (initialized from post prop)
   const [isLiked, setIsLiked] = useState(Boolean(post.liked));
   const [likeCount, setLikeCount] = useState(Number(post.likeCount) || 0);
   const [isLikeLoading, setIsLikeLoading] = useState(false);
 
-  // Comments State
+  // Local state for Comments
   const [showComments, setShowComments] = useState(false);
   const [comments, setComments] = useState(post.comments || []);
   const [commentCount, setCommentCount] = useState(
@@ -47,21 +48,23 @@ const PostCard = ({ post, onPostUpdated }) => {
   const [isCommentSubmitting, setIsCommentSubmitting] = useState(false);
   const [deletingCommentIds, setDeletingCommentIds] = useState([]);
 
-  // Notification / Feedback State
+  // Snackbar error notification message
   const [errorSnackbar, setErrorSnackbar] = useState("");
 
   const authorName = post.user?.username || "Unknown";
   const authorInitial = authorName.charAt(0).toUpperCase();
   const timeFormatted = formatRelativeTime(post.createdAt);
 
-  // 1. Optimistic Like / Unlike Handler
+  // 1. Like / Unlike click handler (with instant optimistic UI update)
   const handleToggleLike = async () => {
+    // Prevent multiple fast clicks while a request is in flight
     if (isLikeLoading) return;
 
+    // Save previous state in case request fails and we need to rollback
     const previousLiked = isLiked;
     const previousLikeCount = likeCount;
 
-    // Optimistically update local state immediately
+    // Update UI instantly
     const nextLiked = !previousLiked;
     const nextLikeCount = nextLiked
       ? previousLikeCount + 1
@@ -73,14 +76,16 @@ const PostCard = ({ post, onPostUpdated }) => {
 
     try {
       if (nextLiked) {
+        // Send like to backend
         const res = await likePost(post._id, token);
         setLikeCount(res.likeCount);
       } else {
+        // Send unlike to backend
         const res = await unlikePost(post._id, token);
         setLikeCount(res.likeCount);
       }
     } catch (err) {
-      // Rollback to previous state on error
+      // Something went wrong, rollback to original like state
       setIsLiked(previousLiked);
       setLikeCount(previousLikeCount);
       setErrorSnackbar("Couldn't update like. Please try again.");
@@ -89,13 +94,13 @@ const PostCard = ({ post, onPostUpdated }) => {
     }
   };
 
-  // 2. Optimistic Comment Submission Handler
+  // 2. Submit new comment handler (with instant optimistic UI update)
   const handleCommentSubmit = async (e) => {
     e.preventDefault();
     const trimmed = commentInput.trim();
     if (!trimmed || isCommentSubmitting) return;
 
-    // Create a temporary comment for immediate visual feedback
+    // Create a temporary comment object so it shows up on screen immediately
     const tempId = `temp-${Date.now()}`;
     const temporaryComment = {
       _id: tempId,
@@ -108,16 +113,17 @@ const PostCard = ({ post, onPostUpdated }) => {
       pending: true,
     };
 
-    // Optimistically update UI
+    // Add temporary comment to local state and increment count
     setComments((prev) => [...prev, temporaryComment]);
     setCommentCount((prev) => prev + 1);
     setCommentInput("");
     setIsCommentSubmitting(true);
 
     try {
+      // Save comment in MongoDB via API
       const data = await addComment(post._id, trimmed, token);
 
-      // Replace temporary comment with server-persisted comment
+      // Replace temporary comment with the saved comment from server
       setComments((prev) =>
         prev.map((c) => (c._id === tempId ? data.comment : c))
       );
@@ -125,7 +131,7 @@ const PostCard = ({ post, onPostUpdated }) => {
         setCommentCount(data.commentCount);
       }
     } catch (err) {
-      // Rollback temporary comment on failure
+      // If API fails, remove the temporary comment and restore count
       setComments((prev) => prev.filter((c) => c._id !== tempId));
       setCommentCount((prev) => Math.max(0, prev - 1));
       setErrorSnackbar("Couldn't add comment. Please try again.");
@@ -134,12 +140,12 @@ const PostCard = ({ post, onPostUpdated }) => {
     }
   };
 
-  // 3. Optimistic Comment Deletion Handler (Own Comments Only)
+  // 3. Delete own comment handler (with optimistic UI removal)
   const handleDeleteComment = async (commentId) => {
     const commentToDelete = comments.find((c) => c._id === commentId);
     if (!commentToDelete || deletingCommentIds.includes(commentId)) return;
 
-    // Optimistically remove comment from UI
+    // Remove comment from UI immediately
     setComments((prev) => prev.filter((c) => c._id !== commentId));
     setCommentCount((prev) => Math.max(0, prev - 1));
     setDeletingCommentIds((prev) => [...prev, commentId]);
@@ -150,7 +156,7 @@ const PostCard = ({ post, onPostUpdated }) => {
         setCommentCount(data.commentCount);
       }
     } catch (err) {
-      // Rollback deleted comment on failure
+      // Rollback comment if server request fails
       setComments((prev) => [...prev, commentToDelete]);
       setCommentCount((prev) => prev + 1);
       setErrorSnackbar("Couldn't delete comment. Please try again.");
@@ -163,22 +169,28 @@ const PostCard = ({ post, onPostUpdated }) => {
     <Paper
       variant="outlined"
       sx={{
-        p: { xs: 2.25, sm: 3 },
-        borderRadius: 2,
-        backgroundColor: "background.paper",
-        borderColor: "divider",
+        p: { xs: 2.5, sm: 3 },
+        borderRadius: "14px",
+        backgroundColor: "#111827",
+        borderColor: "#253247",
+        transition: "border-color 150ms ease-in-out",
+        "&:hover": {
+          borderColor: "#31405A",
+        },
       }}
     >
       <Stack spacing={2}>
-        {/* Header: Author Avatar, Username & Timestamp */}
+        {/* Post author header */}
         <Stack direction="row" spacing={1.5} alignItems="center">
           <Avatar
             sx={{
-              bgcolor: "primary.main",
-              width: 40,
-              height: 40,
+              bgcolor: "#3B82F6",
+              color: "#FFFFFF",
+              width: 44,
+              height: 44,
               fontSize: "1rem",
               fontWeight: 600,
+              flexShrink: 0,
             }}
           >
             {authorInitial}
@@ -188,9 +200,10 @@ const PostCard = ({ post, onPostUpdated }) => {
             <Typography
               variant="body1"
               sx={{
-                fontWeight: 600,
-                color: "text.primary",
-                lineHeight: 1.2,
+                fontWeight: 650,
+                color: "#F5F7FA",
+                fontSize: "1.03125rem",
+                lineHeight: 1.25,
                 overflow: "hidden",
                 textOverflow: "ellipsis",
                 whiteSpace: "nowrap",
@@ -201,8 +214,8 @@ const PostCard = ({ post, onPostUpdated }) => {
             <Typography
               variant="caption"
               sx={{
-                color: "text.secondary",
-                fontSize: "0.75rem",
+                color: "#7F8A9D",
+                fontSize: "0.8125rem",
               }}
             >
               {timeFormatted}
@@ -210,32 +223,31 @@ const PostCard = ({ post, onPostUpdated }) => {
           </Box>
         </Stack>
 
-        {/* Post Text Content */}
+        {/* Post text message */}
         {post.text && (
           <Typography
             variant="body1"
             sx={{
-              color: "text.primary",
+              color: "#F5F7FA",
               whiteSpace: "pre-line",
               wordBreak: "break-word",
               lineHeight: 1.55,
-              fontSize: "0.9375rem",
+              fontSize: "1.03125rem",
             }}
           >
             {post.text}
           </Typography>
         )}
 
-        {/* Post Image Content */}
+        {/* Post attached image */}
         {post.image && (
           <Box
             sx={{
-              mt: post.text ? 1 : 0,
-              borderRadius: 1.5,
+              mt: post.text ? 0.75 : 0,
+              borderRadius: "10px",
               overflow: "hidden",
-              border: "1px solid",
-              borderColor: "divider",
-              backgroundColor: "#0d131f",
+              border: "1px solid #253247",
+              backgroundColor: "#0B0F17",
               display: "flex",
               justifyContent: "center",
               alignItems: "center",
@@ -256,11 +268,11 @@ const PostCard = ({ post, onPostUpdated }) => {
           </Box>
         )}
 
-        <Divider sx={{ my: 0.5 }} />
+        <Divider sx={{ my: 0.5, borderColor: "#253247" }} />
 
-        {/* Actions Row: Like & Comment Counters */}
+        {/* Action row: Like and Comment buttons */}
         <Stack direction="row" spacing={3} alignItems="center">
-          {/* Like Button & Count */}
+          {/* Like button */}
           <Stack direction="row" spacing={0.75} alignItems="center">
             <Tooltip title={isLiked ? "Unlike post" : "Like post"}>
               <IconButton
@@ -268,29 +280,29 @@ const PostCard = ({ post, onPostUpdated }) => {
                 onClick={handleToggleLike}
                 aria-label={isLiked ? "Unlike post" : "Like post"}
                 sx={{
-                  color: isLiked ? "#f87171" : "text.secondary",
-                  p: 0.5,
+                  color: isLiked ? "#EF4444" : "#A7B1C2",
+                  p: 0.6,
                   "&:hover": {
-                    color: isLiked ? "#ef4444" : "#f87171",
-                    backgroundColor: "rgba(248, 113, 113, 0.08)",
+                    color: isLiked ? "#DC2626" : "#EF4444",
+                    backgroundColor: "rgba(239, 68, 68, 0.08)",
                   },
                 }}
               >
                 {isLiked ? (
-                  <FavoriteIcon fontSize="small" />
+                  <FavoriteIcon fontSize="small" sx={{ color: "#EF4444" }} />
                 ) : (
                   <FavoriteBorderIcon fontSize="small" />
                 )}
               </IconButton>
             </Tooltip>
 
-            {/* Zero Count Rule: Only show number when count > 0 */}
+            {/* Zero-count rule: only show number when count is greater than 0 */}
             {likeCount > 0 && (
               <Typography
                 variant="body2"
                 sx={{
-                  fontSize: "0.8125rem",
-                  color: isLiked ? "#f87171" : "text.secondary",
+                  fontSize: "0.84375rem",
+                  color: isLiked ? "#EF4444" : "#A7B1C2",
                   fontWeight: 600,
                   userSelect: "none",
                 }}
@@ -300,7 +312,7 @@ const PostCard = ({ post, onPostUpdated }) => {
             )}
           </Stack>
 
-          {/* Comment Toggle Button & Count */}
+          {/* Comment toggle button */}
           <Stack direction="row" spacing={0.75} alignItems="center">
             <Tooltip title="View comments">
               <IconButton
@@ -308,10 +320,10 @@ const PostCard = ({ post, onPostUpdated }) => {
                 onClick={() => setShowComments((prev) => !prev)}
                 aria-label="View comments"
                 sx={{
-                  color: showComments ? "primary.main" : "text.secondary",
-                  p: 0.5,
+                  color: showComments ? "#3B82F6" : "#A7B1C2",
+                  p: 0.6,
                   "&:hover": {
-                    color: "primary.main",
+                    color: "#3B82F6",
                     backgroundColor: "rgba(59, 130, 246, 0.08)",
                   },
                 }}
@@ -320,13 +332,13 @@ const PostCard = ({ post, onPostUpdated }) => {
               </IconButton>
             </Tooltip>
 
-            {/* Zero Count Rule: Only show number when count > 0 */}
+            {/* Zero-count rule: only show number when count is greater than 0 */}
             {commentCount > 0 && (
               <Typography
                 variant="body2"
                 sx={{
-                  fontSize: "0.8125rem",
-                  color: showComments ? "primary.main" : "text.secondary",
+                  fontSize: "0.84375rem",
+                  color: showComments ? "#3B82F6" : "#A7B1C2",
                   fontWeight: 600,
                   userSelect: "none",
                 }}
@@ -337,20 +349,20 @@ const PostCard = ({ post, onPostUpdated }) => {
           </Stack>
         </Stack>
 
-        {/* Expandable Comments Section */}
+        {/* Expandable comments section */}
         {showComments && (
           <Box sx={{ pt: 1 }}>
-            <Divider sx={{ mb: 2 }} />
+            <Divider sx={{ mb: 2, borderColor: "#253247" }} />
 
-            {/* List of Comments */}
+            {/* List of comments */}
             {comments.length > 0 && (
-              <Stack spacing={1.75} sx={{ mb: 2 }}>
+              <Stack spacing={1.5} sx={{ mb: 2 }}>
                 {comments.map((comment) => {
                   const commentAuthor = comment.user?.username || "Unknown";
                   const commentInitial = commentAuthor.charAt(0).toUpperCase();
                   const commentTime = formatRelativeTime(comment.createdAt);
 
-                  // Ownership Check: Current user can delete only their own comments
+                  // Check if current user is the author of this comment
                   const isMyComment =
                     Boolean(user) &&
                     (comment.user?._id === user?.id ||
@@ -365,17 +377,20 @@ const PostCard = ({ post, onPostUpdated }) => {
                       alignItems="flex-start"
                       sx={{
                         opacity: comment.pending ? 0.65 : 1,
-                        transition: "opacity 0.2s ease-in-out",
+                        transition: "opacity 150ms ease-in-out",
                       }}
                     >
                       <Avatar
                         sx={{
-                          width: 28,
-                          height: 28,
-                          fontSize: "0.75rem",
+                          width: 30,
+                          height: 30,
+                          fontSize: "0.8125rem",
                           fontWeight: 600,
-                          bgcolor: "secondary.dark",
+                          bgcolor: "#1E293B",
+                          color: "#94A3B8",
+                          border: "1px solid #253247",
                           mt: 0.25,
+                          flexShrink: 0,
                         }}
                       >
                         {commentInitial}
@@ -384,25 +399,24 @@ const PostCard = ({ post, onPostUpdated }) => {
                       <Box
                         sx={{
                           flex: 1,
-                          backgroundColor: "#0d131f",
-                          p: 1.25,
-                          borderRadius: 1.5,
-                          border: "1px solid",
-                          borderColor: "divider",
+                          backgroundColor: "#151E2E",
+                          p: 1.5,
+                          borderRadius: "10px",
+                          border: "1px solid #253247",
                         }}
                       >
                         <Stack
                           direction="row"
                           justifyContent="space-between"
                           alignItems="center"
-                          sx={{ mb: 0.25 }}
+                          sx={{ mb: 0.35 }}
                         >
                           <Typography
                             variant="caption"
                             sx={{
                               fontWeight: 600,
-                              color: "text.primary",
-                              fontSize: "0.8125rem",
+                              color: "#F5F7FA",
+                              fontSize: "0.84375rem",
                             }}
                           >
                             {commentAuthor}
@@ -412,14 +426,14 @@ const PostCard = ({ post, onPostUpdated }) => {
                             <Typography
                               variant="caption"
                               sx={{
-                                color: "text.secondary",
-                                fontSize: "0.7rem",
+                                color: "#7F8A9D",
+                                fontSize: "0.75rem",
                               }}
                             >
                               {commentTime}
                             </Typography>
 
-                            {/* Delete Button (Visible only on user's own comments) */}
+                            {/* Delete button only appears for user's own comments */}
                             {isMyComment && !comment.pending && (
                               <Tooltip title="Delete comment">
                                 <IconButton
@@ -429,10 +443,10 @@ const PostCard = ({ post, onPostUpdated }) => {
                                   sx={{
                                     p: 0.25,
                                     ml: 0.5,
-                                    color: "text.secondary",
+                                    color: "#7F8A9D",
                                     "&:hover": {
-                                      color: "error.main",
-                                      backgroundColor: "rgba(248, 113, 113, 0.08)",
+                                      color: "#EF4444",
+                                      backgroundColor: "rgba(239, 68, 68, 0.08)",
                                     },
                                   }}
                                 >
@@ -445,8 +459,9 @@ const PostCard = ({ post, onPostUpdated }) => {
                         <Typography
                           variant="body2"
                           sx={{
-                            color: "text.primary",
-                            fontSize: "0.875rem",
+                            color: "#F5F7FA",
+                            fontSize: "0.90625rem",
+                            lineHeight: 1.45,
                             whiteSpace: "pre-line",
                             wordBreak: "break-word",
                           }}
@@ -460,7 +475,7 @@ const PostCard = ({ post, onPostUpdated }) => {
               </Stack>
             )}
 
-            {/* Add Comment Input Form */}
+            {/* Form to submit a new comment */}
             <Box component="form" onSubmit={handleCommentSubmit} noValidate>
               <TextField
                 fullWidth
@@ -484,8 +499,8 @@ const PostCard = ({ post, onPostUpdated }) => {
                               aria-label="Send comment"
                               sx={{
                                 color: commentInput.trim()
-                                  ? "primary.main"
-                                  : "text.disabled",
+                                  ? "#3B82F6"
+                                  : "#7F8A9D",
                               }}
                             >
                               <SendIcon sx={{ fontSize: "1rem" }} />
@@ -498,8 +513,8 @@ const PostCard = ({ post, onPostUpdated }) => {
                 }}
                 sx={{
                   "& .MuiOutlinedInput-root": {
-                    backgroundColor: "#0d131f",
-                    borderRadius: 1.5,
+                    backgroundColor: "#151E2E",
+                    borderRadius: "8px",
                   },
                 }}
               />
@@ -508,7 +523,7 @@ const PostCard = ({ post, onPostUpdated }) => {
         )}
       </Stack>
 
-      {/* Error Toast Snackbar */}
+      {/* Snackbar toast notification for errors */}
       <Snackbar
         open={Boolean(errorSnackbar)}
         autoHideDuration={4000}
@@ -518,7 +533,13 @@ const PostCard = ({ post, onPostUpdated }) => {
         <Alert
           onClose={() => setErrorSnackbar("")}
           severity="error"
-          sx={{ width: "100%", borderRadius: 1.5 }}
+          sx={{
+            width: "100%",
+            borderRadius: "8px",
+            backgroundColor: "#1F2937",
+            color: "#F5F7FA",
+            border: "1px solid #EF4444",
+          }}
         >
           {errorSnackbar}
         </Alert>

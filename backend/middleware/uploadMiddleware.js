@@ -1,9 +1,9 @@
 import multer from "multer";
 
-// Use memory storage so image files are kept in buffer for Sharp processing
+// Store uploaded files directly in memory (RAM buffer) so we can optimize them with Sharp
 const storage = multer.memoryStorage();
 
-// Validate allowed image types: JPG, JPEG, PNG, WebP
+// Check that only common image formats are uploaded
 const fileFilter = (req, file, cb) => {
   const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/jpg"];
   if (allowedTypes.includes(file.mimetype)) {
@@ -17,11 +17,11 @@ export const upload = multer({
   storage,
   fileFilter,
   limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB limit
+    fileSize: 5 * 1024 * 1024, // 5MB max file size
   },
 });
 
-// Wrapper middleware to handle Multer upload errors cleanly
+// Middleware helper to handle image uploads and catch any size/type errors cleanly
 export const handleImageUpload = (req, res, next) => {
   const singleUpload = upload.single("image");
 

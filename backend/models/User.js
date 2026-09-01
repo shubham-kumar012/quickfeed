@@ -1,9 +1,11 @@
 import mongoose from "mongoose";
 
+// Regex pattern to check valid email address
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-// Username allows letters, numbers, and underscores, strictly without spaces
+// Regex pattern: username can have letters, numbers, and underscores (no spaces allowed)
 const usernameRegex = /^[a-zA-Z0-9_]+$/;
 
+// User schema definition for our MongoDB 'users' collection
 const userSchema = new mongoose.Schema(
   {
     username: {
@@ -20,7 +22,7 @@ const userSchema = new mongoose.Schema(
     email: {
       type: String,
       required: [true, "Email is required"],
-      unique: true,
+      unique: true, // Prevents duplicate email signups
       trim: true,
       lowercase: true,
       match: [emailRegex, "Please provide a valid email address"],
@@ -32,7 +34,7 @@ const userSchema = new mongoose.Schema(
     },
   },
   {
-    timestamps: true, // Automatically manages createdAt and updatedAt
+    timestamps: true, // Automatically adds createdAt and updatedAt fields
   }
 );
 
