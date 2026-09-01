@@ -14,9 +14,11 @@ import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
 import AuthLayout from "../components/AuthLayout";
+import { useAuth } from "../context/AuthContext";
 
 const Login = () => {
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   // Form State
   const [formData, setFormData] = useState({
@@ -36,6 +38,7 @@ const Login = () => {
       ...prev,
       [name]: value,
     }));
+
     // Clear field-specific error upon typing
     if (errors[name]) {
       setErrors((prev) => ({
@@ -61,8 +64,6 @@ const Login = () => {
 
     if (!formData.password) {
       newErrors.password = "Password is required";
-    } else if (formData.password.length < 6) {
-      newErrors.password = "Password must be at least 6 characters";
     }
 
     setErrors(newErrors);
@@ -80,18 +81,11 @@ const Login = () => {
     setIsSubmitting(true);
 
     try {
-      // -------------------------------------------------------------
-      // TODO: Connect authentication API here
-      // Example:
-      // const response = await api.post('/api/auth/login', formData);
-      // localStorage.setItem('token', response.data.token);
-      // -------------------------------------------------------------
-
-      // Demo placeholder navigation after successful validation
+      await login(formData.email.trim(), formData.password);
       navigate("/home");
     } catch (err) {
       setErrorMessage(
-        err?.response?.data?.message || "Failed to sign in. Please try again."
+        err.message || "Unable to sign in. Please check your email and password."
       );
     } finally {
       setIsSubmitting(false);
@@ -101,7 +95,7 @@ const Login = () => {
   return (
     <AuthLayout
       title="Welcome back"
-      subtitle="Sign in to continue"
+      subtitle="Sign in to your account"
     >
       {errorMessage && (
         <Alert severity="error" sx={{ mb: 2.5, borderRadius: 1.5 }}>
@@ -195,7 +189,7 @@ const Login = () => {
               fontSize: "0.9375rem",
             }}
           >
-            {isSubmitting ? "Signing in..." : "Sign In"}
+            {isSubmitting ? "Signing in..." : "Sign in"}
           </Button>
         </Stack>
       </Box>

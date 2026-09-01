@@ -8,26 +8,31 @@ import {
   Container,
   Stack,
   Avatar,
+  IconButton,
+  Tooltip,
 } from "@mui/material";
 import DynamicFeedOutlinedIcon from "@mui/icons-material/DynamicFeedOutlined";
-import PersonOutlineOutlinedIcon from "@mui/icons-material/PersonOutlineOutlined";
-import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
 import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
 import { useNavigate, Link as RouterLink } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
-const Navbar = ({ activeTab = "home" }) => {
+const Navbar = () => {
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
 
   const handleLogout = () => {
-    // Navigate back to login
+    logout();
     navigate("/login");
   };
+
+  // Get initial for avatar
+  const userInitial = user?.username ? user.username.charAt(0).toUpperCase() : "U";
 
   return (
     <AppBar position="sticky" elevation={0}>
       <Container maxWidth="md">
-        <Toolbar disableGutters sx={{ justifyContent: "space-between", minHeight: 64 }}>
-          {/* Logo */}
+        <Toolbar disableGutters sx={{ justifyContent: "space-between", minHeight: 60 }}>
+          {/* Logo & Brand */}
           <Stack
             component={RouterLink}
             to="/home"
@@ -39,7 +44,7 @@ const Navbar = ({ activeTab = "home" }) => {
               color: "text.primary",
             }}
           >
-            <DynamicFeedOutlinedIcon sx={{ color: "primary.main", fontSize: 26 }} />
+            <DynamicFeedOutlinedIcon sx={{ color: "primary.main", fontSize: 24 }} />
             <Typography
               variant="h6"
               component="span"
@@ -47,53 +52,70 @@ const Navbar = ({ activeTab = "home" }) => {
                 fontWeight: 700,
                 letterSpacing: "-0.02em",
                 color: "text.primary",
+                fontSize: "1.125rem",
               }}
             >
               Socially
             </Typography>
           </Stack>
 
-          {/* Navigation Links */}
-          <Stack direction="row" spacing={1} alignItems="center">
-            <Button
-              component={RouterLink}
-              to="/home"
-              startIcon={<HomeOutlinedIcon />}
-              variant={activeTab === "home" ? "contained" : "text"}
-              size="small"
-              sx={{
-                color: activeTab === "home" ? "primary.contrastText" : "text.secondary",
-                "&:hover": {
-                  color: activeTab === "home" ? "primary.contrastText" : "text.primary",
-                },
-              }}
-            >
-              Home
-            </Button>
+          {/* User Info & Logout Button */}
+          <Stack direction="row" spacing={1.5} alignItems="center">
+            {/* User chip / badge */}
+            <Stack direction="row" spacing={1} alignItems="center" sx={{ mr: 0.5 }}>
+              <Avatar
+                sx={{
+                  bgcolor: "primary.main",
+                  width: 32,
+                  height: 32,
+                  fontSize: "0.875rem",
+                  fontWeight: 600,
+                }}
+              >
+                {userInitial}
+              </Avatar>
+              <Typography
+                variant="body2"
+                sx={{
+                  fontWeight: 600,
+                  color: "text.primary",
+                  display: { xs: "none", sm: "block" },
+                }}
+              >
+                {user?.username || "User"}
+              </Typography>
+            </Stack>
 
-            <Button
-              startIcon={<PersonOutlineOutlinedIcon />}
-              variant={activeTab === "profile" ? "contained" : "text"}
-              size="small"
-              sx={{
-                color: activeTab === "profile" ? "primary.contrastText" : "text.secondary",
-                "&:hover": {
-                  color: activeTab === "profile" ? "primary.contrastText" : "text.primary",
-                },
-              }}
-            >
-              Profile
-            </Button>
-
+            {/* Desktop Logout Button */}
             <Button
               onClick={handleLogout}
               startIcon={<LogoutOutlinedIcon />}
               variant="outlined"
               size="small"
-              sx={{ ml: 1, display: { xs: "none", sm: "inline-flex" } }}
+              sx={{
+                display: { xs: "none", sm: "inline-flex" },
+                px: 1.5,
+                py: 0.5,
+              }}
             >
-              Sign Out
+              Logout
             </Button>
+
+            {/* Mobile Icon Logout Button */}
+            <Tooltip title="Logout">
+              <IconButton
+                onClick={handleLogout}
+                size="small"
+                aria-label="Logout"
+                sx={{
+                  display: { xs: "inline-flex", sm: "none" },
+                  color: "text.secondary",
+                  "&:hover": { color: "text.primary" },
+                }}
+              >
+                <LogoutOutlinedIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
           </Stack>
         </Toolbar>
       </Container>

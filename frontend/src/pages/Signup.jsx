@@ -14,9 +14,11 @@ import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
 import AuthLayout from "../components/AuthLayout";
+import { useAuth } from "../context/AuthContext";
 
 const Signup = () => {
   const navigate = useNavigate();
+  const { signup } = useAuth();
 
   // Form State
   const [formData, setFormData] = useState({
@@ -39,6 +41,7 @@ const Signup = () => {
       ...prev,
       [name]: value,
     }));
+
     // Clear field-specific error upon typing
     if (errors[name]) {
       setErrors((prev) => ({
@@ -97,22 +100,15 @@ const Signup = () => {
     setIsSubmitting(true);
 
     try {
-      // -------------------------------------------------------------
-      // TODO: Connect registration/signup API here
-      // Example:
-      // const response = await api.post('/api/auth/signup', {
-      //   username: formData.username,
-      //   email: formData.email,
-      //   password: formData.password
-      // });
-      // localStorage.setItem('token', response.data.token);
-      // -------------------------------------------------------------
-
-      // Demo placeholder navigation after successful validation
+      await signup(
+        formData.username.trim(),
+        formData.email.trim(),
+        formData.password
+      );
       navigate("/home");
     } catch (err) {
       setErrorMessage(
-        err?.response?.data?.message || "Failed to create account. Please try again."
+        err.message || "Failed to create account. Please try again."
       );
     } finally {
       setIsSubmitting(false);
@@ -121,8 +117,8 @@ const Signup = () => {
 
   return (
     <AuthLayout
-      title="Create your account"
-      subtitle="Join the conversation"
+      title="Create account"
+      subtitle="Join Socially to share and connect"
     >
       {errorMessage && (
         <Alert severity="error" sx={{ mb: 2.5, borderRadius: 1.5 }}>
@@ -284,7 +280,7 @@ const Signup = () => {
               fontSize: "0.9375rem",
             }}
           >
-            {isSubmitting ? "Creating account..." : "Create Account"}
+            {isSubmitting ? "Creating account..." : "Create account"}
           </Button>
         </Stack>
       </Box>
