@@ -1,153 +1,148 @@
-# Mini Social Post Application
+# 🚀 QuickFeed — Mini Social Post Application
 
-A clean, modern, full-stack social posting application built with **React (JavaScript)**, **Material UI (MUI)**, **Node.js/Express**, **MongoDB (Mongoose)**, **Cloudinary**, **Sharp**, **bcryptjs**, and **JWT**.
+Hey there! 👋 Welcome to **QuickFeed**, a full-stack social feed web application I built as an internship assignment.
+
+The goal of this project was to build a modern, responsive social posting platform with clean code, secure authentication, Cloudinary image uploads with on-the-fly Sharp optimization, and an interactive feed featuring optimistic likes and comments — all strictly organized into **only 2 MongoDB collections** (`users` and `posts`).
+
+---
+
+## 🌐 Live Project Links (Demo)
+
+| Service | Live URL | Description |
+| :--- | :--- | :--- |
+| **Frontend Web App** | [https://quickfeed-frontend.vercel.app](https://quickfeed-frontend.vercel.app) *(Demo Link)* | Client application built with React & Material UI |
+| **Backend REST API** | [https://quickfeed-api.onrender.com](https://quickfeed-api.onrender.com) *(Demo Link)* | Node.js & Express server connected to MongoDB |
+
+---
+
+## 👨‍💻 Connect With Me
+
+If you'd like to reach out, discuss this project, or connect:
+
+- **Portfolio**: [https://itshubham.me](https://itshubham.me)
+- **LinkedIn**: [https://www.linkedin.com/in/shubham-kumar-111041267](https://www.linkedin.com/in/shubham-kumar-111041267)
+- **Email**: [shubhampal7083@gmail.com](mailto:shubhampal7083@gmail.com)
 
 ---
 
 ## 🛠️ Tech Stack
 
 ### Frontend
-- **React.js** (Vite)
-- **React Router v7** (Client-side routing & Protected Routes)
-- **Material UI (MUI v6)** (Dark mode theme, auto-growing composer, responsive post cards)
-- **Vanilla CSS / Emotion** (Custom dark-mode styles & slim scrollbars)
+- **React.js (Vite)**: Fast component-based user interface.
+- **React Router (v7)**: Client-side routing with `ProtectedRoute` and `PublicRoute` wrappers.
+- **Material UI (MUI v6)**: Pre-built accessible components with a custom dark theme palette.
+- **Context API (`AuthContext`)**: Global state to manage logged-in user session and JWT token.
 
 ### Backend
-- **Node.js & Express.js** (REST API)
-- **MongoDB & Mongoose** (Database strictly using only two collections: `users` and `posts`)
-- **Cloudinary** (Cloud image storage via `upload_stream`)
-- **Sharp** (High-performance in-memory image resizing, compression & WebP conversion)
-- **Multer** (In-memory multipart upload processing)
-- **bcryptjs** (Password hashing with salt rounds)
-- **jsonwebtoken (JWT)** (Stateless token authentication)
-- **dotenv** (Environment variable management)
-- **cors** (Cross-Origin Resource Sharing)
+- **Node.js & Express.js**: RESTful API server.
+- **MongoDB & Mongoose**: Database storage using only `users` and `posts` collections.
+- **Cloudinary**: Cloud image hosting streamed directly via memory buffers.
+- **Sharp**: High-performance image optimization, resizing, and WebP conversion.
+- **Multer**: In-memory multipart form data handling (`multer.memoryStorage()`).
+- **bcryptjs**: Password hashing (10 salt rounds) so plain-text passwords are never saved.
+- **jsonwebtoken (JWT)**: Secure, stateless token authentication for private API endpoints.
 
 ---
 
-## ✨ Features Implemented
+## ✨ Key Features
 
 ### 1. Authentication & Security
-- [x] **User Registration (Signup)**: Input validation (strict username validation without spaces, email regex format, min 6-character password, password confirmation), duplicate email check (409 Conflict), bcrypt hashing (10 salt rounds), and automatic JWT issuance.
-- [x] **User Authentication (Login)**: Secure credential validation, bcrypt password comparison, JWT generation, and generic error messages to prevent user enumeration.
-- [x] **JWT Authentication & Middleware**: Bearer token verification middleware guarding private endpoints (`/api/auth/me`, `POST /api/posts`, `POST/DELETE /api/posts/:postId/like`, `POST /api/posts/:postId/comments`).
-- [x] **Current User Endpoint (`/api/auth/me`)**: Protected route returning sanitized user information (password is never exposed).
-- [x] **Persistent Session Management (`AuthContext`)**: Client-side state storing token in `localStorage`, verifying validity on refresh, and maintaining seamless login sessions.
-- [x] **Protected Routes**: Restricts access to `/home` for authenticated users and redirects unauthenticated users to `/login`.
-- [x] **Public Route Guards**: Automatically redirects authenticated users away from `/login` and `/signup` directly to `/home`.
-- [x] **User Logout**: Clears stored tokens and state, safely redirecting to `/login`.
+- **Signup with Validation**: Validates username (3–30 chars, alphanumeric + underscores, **no spaces**), checks email regex, enforces min 6-character password with confirmation, and prevents duplicate accounts.
+- **Password Hashing**: Uses `bcryptjs` before writing any user to MongoDB.
+- **JWT Authorization**: Protects private routes using an Express `authMiddleware` that checks `Bearer <token>`.
+- **Protected Client Routes**: Unauthenticated users cannot view `/home` and are redirected to `/login`.
+- **Guest Route Protection**: Authenticated users visiting `/login` or `/signup` are redirected straight to `/home`.
 
-### 2. Social Composer (Create Post)
-- [x] **Seamless Auto-Growing Composer**: Starts compact (~48px–64px height) without a boxy border, naturally expanding downward as the user types.
-- [x] **Slim Themed Scrollbar**: Capped at viewport height (`calc(100vh - 300px)`), with a slim 5px dark-themed scrollbar appearing only when needed.
-- [x] **Post Types Supported**:
-  - Text-only posts
-  - Image-only posts
-  - Text + Image combined posts
-- [x] **Image Preview**: Displays below the text content with clean rounded borders (6px–8px) and a one-click top-right removal button.
-- [x] **Post Validation**: Requires at least text or an image before posting (empty submissions are prevented and rejected with HTTP 400).
-- [x] **Interactive Action Bar**: Minimal bottom bar containing an "Add image" file selector and "Post" button with loading state (*"Posting..."*).
+### 2. Social Post Composer (Create Post)
+- **Auto-Growing Textarea**: Starts compact (~72px) and expands downward naturally as you type up to 55vh before showing a slim dark scrollbar.
+- **Flexible Post Types**: Supports **Text-only**, **Image-only**, or **Text + Image** combined posts.
+- **Instant Image Preview**: Shows the selected image with a clean 10px rounded preview and a one-click remove button before uploading.
+- **Validation**: Enforces that users write text OR select an image before posting.
 
 ### 3. Cloudinary & Sharp Image Pipeline
-- [x] **Zero Local File Storage**: Uploaded files exist purely in-memory buffer via `multer.memoryStorage()`. No local disk writes or static upload directories.
-- [x] **Sharp Image Optimization**: Images are automatically downscaled if exceeding 1600x1600px without upscaling smaller media.
-- [x] **WebP Compression**: Images are compressed and converted into lightweight WebP format (`quality: 80`).
-- [x] **Cloudinary Storage**: Streamed directly to Cloudinary into the `mini-social-app/posts` folder, persisting only the HTTPS `secure_url` in MongoDB.
+- **Zero Local Disk Writes**: Files are kept in memory (`multer.memoryStorage()`), resized to max 1600x1600px, compressed to WebP (`quality: 80`) using Sharp, and streamed directly to Cloudinary.
+- **Fast Delivery**: The database stores only Cloudinary's secure HTTPS URL.
 
-### 4. Likes & Comments (Social Interaction)
-- [x] **Optimistic Likes**: Instant heart icon toggle and count updates without waiting for network response, with automatic rollback if the API fails.
-- [x] **Duplicate Like Prevention**: Uses MongoDB `$addToSet` for liking and `$pull` for unliking to ensure users can only like a post once.
-- [x] **Zero-Count Rule**: When like or comment count is 0, only the icon is displayed (never shows `0`).
-- [x] **Embedded Comments**: Comments are stored directly inside the post document in MongoDB with author references and timestamps.
-- [x] **Optimistic Comments**: New comments appear immediately in the UI with a temporary state and update seamlessly once persisted by the server.
-- [x] **Comment Validation**: Enforces non-empty trimmed text (up to 500 characters).
-- [x] **Author Username Display**: Comments prominently display the commenter's username and human-friendly relative timestamp.
+### 4. Likes & Comments (Interactive Social Actions)
+- **Optimistic UI Updates**: Likes and comments update immediately on the screen without waiting for network latency. If an API request fails, the UI rolls back automatically and displays an alert toast.
+- **Atomic MongoDB Operations**: Uses `$addToSet` for liking and `$pull` for unliking to prevent duplicate likes without needing a separate collection.
+- **Zero-Count Display Rule**: If a post has 0 likes or 0 comments, only the icon is displayed without showing a zero (`0`).
+- **Embedded Comments**: Comments live inside the post document in MongoDB with author references and timestamps.
+- **Delete Own Comments**: Users can delete comments they wrote with a single click; other users' comments cannot be deleted.
 
-### 5. Public Social Feed
-- [x] **All Public Posts**: Retrieves all posts created across the platform.
-- [x] **Sorted Chronologically**: Newest posts automatically appear first (`createdAt: -1`).
-- [x] **Post Author Info**: Displays author's initial avatar and username.
-- [x] **Relative Timestamp**: Human-friendly relative time (e.g. *Just now*, *5m ago*, *2h ago*, *Yesterday*).
-- [x] **Dynamic Real-Time Update**: Newly created posts appear instantly at the top of the feed without needing a page refresh.
-- [x] **Feed States**: Smooth loading indicator, empty feed encouragement, and error retry state.
+### 5. Public Feed
+- Displays all community posts ordered by newest first (`createdAt: -1`).
+- Dynamic real-time updates when a user creates a new post.
+- Friendly relative timestamps (*"Just now"*, *"5m ago"*, *"2h ago"*, *"Yesterday"*).
 
 ---
 
-## 📁 Project Structure
+## 📁 Project Folder Structure
 
 ```text
 quickfeed/
 │
 ├── frontend/
+│   ├── public/
+│   │   └── favicon.svg              # QuickFeed dark SVG favicon
 │   ├── src/
 │   │   ├── components/
-│   │   │   ├── AuthLayout.jsx       # Centered auth wrapper with brand header
-│   │   │   ├── Navbar.jsx           # Sticky top navbar with user profile & logout
-│   │   │   ├── CreatePost.jsx       # Auto-growing composer with image preview
+│   │   │   ├── AuthLayout.jsx       # Centered container for login/signup forms
+│   │   │   ├── Navbar.jsx           # Top navigation bar with user profile & logout
+│   │   │   ├── CreatePost.jsx       # Post composer with auto-grow & image preview
 │   │   │   ├── PostCard.jsx         # Post feed item with optimistic likes & comments
-│   │   │   ├── ProtectedRoute.jsx   # Route guard for authenticated pages
-│   │   │   └── PublicRoute.jsx      # Route guard for unauthenticated pages
+│   │   │   ├── ProtectedRoute.jsx   # Route guard for authenticated users
+│   │   │   └── PublicRoute.jsx      # Route guard for public/guest pages
 │   │   ├── context/
-│   │   │   └── AuthContext.jsx      # React Context managing auth state, login & logout
+│   │   │   └── AuthContext.jsx      # Global React Context for login state
 │   │   ├── pages/
-│   │   │   ├── Login.jsx            # Sign in page with validation & password toggle
-│   │   │   ├── Signup.jsx           # Account registration page with strict username rules
-│   │   │   └── Home.jsx             # Social feed & post creation page
+│   │   │   ├── Login.jsx            # Sign in page with email/password validation
+│   │   │   ├── Signup.jsx           # Registration page with strict username rules
+│   │   │   └── Home.jsx             # Public feed & post creation screen
 │   │   ├── services/
-│   │   │   ├── authService.js       # Centralized auth API fetch handlers
-│   │   │   └── postService.js       # Centralized posts, likes & comments API handlers
+│   │   │   ├── authService.js       # Centralized authentication API calls
+│   │   │   └── postService.js       # Centralized posts, likes & comments API calls
 │   │   ├── utils/
-│   │   │   └── formatDate.js        # Human-friendly relative time formatter
-│   │   ├── App.jsx                  # React Router routes and provider setup
-│   │   ├── main.jsx                 # Application entry with MUI ThemeProvider
-│   │   └── theme.js                 # Professional dark-mode MUI theme & slim scrollbar
-│   ├── vite.config.js               # Vite config with backend API proxy
-│   └── package.json                 # Frontend dependencies
+│   │   │   └── formatDate.js        # Relative time helper function
+│   │   ├── App.jsx                  # Main application routes
+│   │   ├── main.jsx                 # Vite application entry point
+│   │   └── theme.js                 # Material UI dark theme configuration
+│   ├── vite.config.js               # Vite config with backend proxy
+│   └── package.json
 │
 ├── backend/
 │   ├── config/
-│   │   └── cloudinary.js            # Cloudinary SDK configuration
+│   │   └── cloudinary.js            # Cloudinary SDK credentials setup
 │   ├── controllers/
-│   │   ├── authController.js        # Signup, Login, and GetMe business logic
-│   │   └── postController.js        # CreatePost, GetPosts, Like/Unlike & Comment logic
+│   │   ├── authController.js        # Signup, login, and getMe controller logic
+│   │   └── postController.js        # Create post, like, comment, and delete controller
 │   ├── middleware/
-│   │   ├── authMiddleware.js        # JWT Bearer token verification middleware
-│   │   └── uploadMiddleware.js      # Multer memory storage and filetype/size filter
+│   │   ├── authMiddleware.js        # JWT token verification middleware
+│   │   └── uploadMiddleware.js      # Multer RAM storage and 5MB image filter
 │   ├── models/
-│   │   ├── User.js                  # Mongoose schema for User
-│   │   └── Post.js                  # Mongoose schema for Post (with likedBy and comments)
+│   │   ├── User.js                  # User schema (username, email, password)
+│   │   └── Post.js                  # Post schema (text, image, likedBy, comments)
 │   ├── routes/
-│   │   ├── authRoutes.js            # Express router mapping auth endpoints
-│   │   └── postRoutes.js            # Express router mapping posts, like & comment endpoints
-│   ├── .env                         # Environment variables (ignored in git)
-│   ├── .env.example                 # Example environment template
-│   ├── server.js                    # Express app entry, routes & database connection
-│   └── package.json                 # Backend dependencies
+│   │   ├── authRoutes.js            # Express routes for authentication
+│   │   └── postRoutes.js            # Express routes for posts, likes & comments
+│   ├── .env.example                 # Template for required environment variables
+│   ├── server.js                    # Express app entry & MongoDB connection
+│   └── package.json
 │
-├── .gitignore                       # Git ignore rules for node_modules and .env
-└── README.md                        # Documentation
+├── .gitignore
+└── README.md
 ```
 
 ---
 
 ## 🔑 Environment Variables
 
-The backend requires the following environment variables configured in `backend/.env`:
+Create a `.env` file inside the `backend/` directory based on `.env.example`:
 
-| Variable | Description | Example |
-| :--- | :--- | :--- |
-| `PORT` | Port number the backend server listens on | `5000` |
-| `MONGO_URI` | MongoDB connection string (Local or MongoDB Atlas) | `mongodb+srv://<user>:<password>@cluster.mongodb.net/quickfeed` |
-| `JWT_SECRET` | Secret key used to sign and verify JSON Web Tokens | `your_secure_jwt_secret_key` |
-| `CLOUDINARY_CLOUD_NAME` | Cloudinary account cloud name | `your_cloud_name` |
-| `CLOUDINARY_API_KEY` | Cloudinary API key | `your_api_key` |
-| `CLOUDINARY_API_SECRET` | Cloudinary API secret | `your_api_secret` |
-
-A `.env.example` template is provided in `backend/.env.example`:
 ```env
 PORT=5000
-MONGO_URI=mongodb://localhost:27017/socially_db
-JWT_SECRET=your_jwt_secret_key_here
+MONGO_URI=mongodb+srv://<username>:<password>@cluster.mongodb.net/quickfeed
+JWT_SECRET=your_super_secret_jwt_key
 
 CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
 CLOUDINARY_API_KEY=your_cloudinary_api_key
@@ -156,78 +151,56 @@ CLOUDINARY_API_SECRET=your_cloudinary_api_secret
 
 ---
 
-## 💻 Running Locally
+## 🚀 How to Run Locally
 
-### 1. Backend Setup
+### 1. Start the Backend Server
 
-1. Navigate to the `backend` directory:
-   ```bash
-   cd backend
-   ```
+```bash
+cd backend
+npm install
+npm run dev
+```
+> The backend will start on **`http://localhost:5000`**.
 
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
+### 2. Start the Frontend Client
 
-3. Configure your `.env` file with MongoDB and Cloudinary credentials:
-   ```bash
-   cp .env.example .env
-   ```
+Open a second terminal window:
 
-4. Start the backend server:
-   ```bash
-   # Production / regular run
-   npm start
-
-   # Or Development mode with nodemon
-   npm run dev
-   ```
-   *The backend will run on `http://localhost:5000`.*
+```bash
+cd frontend
+npm install
+npm run dev
+```
+> The frontend will start on **`http://localhost:3000`** (and automatically proxies `/api` requests to port `5000`).
 
 ---
 
-### 2. Frontend Setup
+## 📡 REST API Summary
 
-1. Open a new terminal and navigate to the `frontend` directory:
-   ```bash
-   cd frontend
-   ```
-
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-
-3. Start the Vite development server:
-   ```bash
-   npm run dev
-   ```
-   *The frontend will run on `http://localhost:3000` (automatically proxies `/api` requests to port `5000`).*
-
-4. Open your browser and navigate to `http://localhost:3000`.
-
----
-
-## 📡 API Endpoints
-
-| Method | Endpoint | Access | Description |
+| Method | Endpoint | Access | Purpose |
 | :--- | :--- | :--- | :--- |
-| `POST` | `/api/auth/signup` | Public | Register a new user (`username`, `email`, `password`) |
-| `POST` | `/api/auth/login` | Public | Log in with credentials (`email`, `password`) |
-| `GET` | `/api/auth/me` | Private | Retrieve current user profile (requires `Bearer <token>`) |
-| `POST` | `/api/posts` | Private | Create post with text and/or in-memory image buffer |
-| `GET` | `/api/posts` | Public | Fetch all public posts sorted newest first |
+| `POST` | `/api/auth/signup` | Public | Register new user account |
+| `POST` | `/api/auth/login` | Public | Authenticate user & receive JWT token |
+| `GET` | `/api/auth/me` | Private | Get currently logged-in user profile |
+| `GET` | `/api/posts` | Public | Fetch all community posts (newest first) |
+| `POST` | `/api/posts` | Private | Create new post (text, image, or both) |
 | `POST` | `/api/posts/:postId/like` | Private | Like a post |
 | `DELETE` | `/api/posts/:postId/like` | Private | Unlike a post |
-| `POST` | `/api/posts/:postId/comments` | Private | Add a comment to a post (`{ text }`) |
+| `POST` | `/api/posts/:postId/comments` | Private | Add a comment to a post |
+| `DELETE` | `/api/posts/:postId/comments/:commentId` | Private | Delete author's own comment |
 
 ---
 
-## 🎓 Interview Talking Points (Key Concepts)
+## 💡 Key Design Decisions
 
-1. **Two-Collection MongoDB Design**: Only `users` and `posts` collections exist. Likes (`likedBy`) and comments (`comments`) are stored directly within each Post document, removing the complexity of maintaining 4+ disparate collections.
-2. **Atomic Like Operations**: Utilizing MongoDB's `$addToSet` ensures idempotent and duplicate-free like additions, while `$pull` atomically handles unliking.
-3. **Dynamic vs Static Counters**: Counts are computed dynamically from array lengths (`likedBy.length`, `comments.length`) rather than storing separate counters, eliminating data desynchronization bugs.
-4. **Optimistic UI with Error Rollback**: Likes and comments update immediately in React state to provide zero-latency feedback to the user. If the network request fails, the component rolls back to its exact previous state and displays a non-intrusive alert toast.
-5. **In-Memory Streaming vs Disk Storage**: Uploaded files never touch the server disk. `multer.memoryStorage()` retains the file in RAM buffer, `sharp` optimizes and converts to WebP in-memory, and `cloudinary.uploader.upload_stream` streams the buffer directly to the cloud.
+1. **Strictly Two MongoDB Collections**:
+   - Instead of separate collections for likes and comments, likes are stored as user ID references in `likedBy: [ObjectId]` and comments are embedded directly in `comments: [{ user, text, createdAt }]` within each post. This keeps database reads fast and avoids unnecessary collection joins.
+2. **In-Memory Image Pipeline**:
+   - Uploaded images are held in RAM via `multer.memoryStorage()`, resized and converted to lightweight `.webp` format via `sharp`, and streamed directly to Cloudinary. No temporary files are saved to the server's local hard drive.
+3. **Optimistic UI with Error Rollback**:
+   - Clicking like or adding a comment updates the local React state immediately so users get instant feedback. If the network request fails, the app automatically reverts the change and informs the user via a snackbar alert.
+
+---
+
+## 📄 License
+This project is open-source and built for educational and portfolio demonstration purposes.
