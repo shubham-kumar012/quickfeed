@@ -10,8 +10,8 @@ The goal of this project was to build a modern, responsive social posting platfo
 
 | Service | Live URL | Description |
 | :--- | :--- | :--- |
-| **Frontend Web App** | [https://quickfeed-frontend.vercel.app](https://quickfeed-frontend.vercel.app) *(Demo Link)* | Client application built with React & Material UI |
-| **Backend REST API** | [https://quickfeed-api.onrender.com](https://quickfeed-api.onrender.com) *(Demo Link)* | Node.js & Express server connected to MongoDB |
+| **Frontend Web App** | [https://quickfeed-ten.vercel.app](https://quickfeed-ten.vercel.app) *(Demo Link)* | Client application built with React & Material UI |
+| **Backend REST API** | [https://quickfeed-vvnw.onrender.com](https://quickfeed-vvnw.onrender.com) *(Demo Link)* | Node.js & Express server connected to MongoDB |
 
 ---
 
