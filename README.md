@@ -1,4 +1,4 @@
-# 🚀 QuickFeed — Mini Social Post Application
+# QuickFeed — Mini Social Post Application
 
 Hey there! 👋 Welcome to **QuickFeed**, a full-stack social feed web application I built as an internship assignment.
 
@@ -6,7 +6,7 @@ The goal of this project was to build a modern, responsive social posting platfo
 
 ---
 
-## 🌐 Live Project Links (Demo)
+## Live Project Links (Demo)
 
 | Service | Live URL | Description |
 | :--- | :--- | :--- |
@@ -15,7 +15,7 @@ The goal of this project was to build a modern, responsive social posting platfo
 
 ---
 
-## 👨‍💻 Connect With Me
+## Connect With Me
 
 If you'd like to reach out, discuss this project, or connect:
 
@@ -25,7 +25,7 @@ If you'd like to reach out, discuss this project, or connect:
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 ### Frontend
 - **React.js (Vite)**: Fast component-based user interface.
@@ -44,7 +44,7 @@ If you'd like to reach out, discuss this project, or connect:
 
 ---
 
-## ✨ Key Features
+## Key Features
 
 ### 1. Authentication & Security
 - **Signup with Validation**: Validates username (3–30 chars, alphanumeric + underscores, **no spaces**), checks email regex, enforces min 6-character password with confirmation, and prevents duplicate accounts.
@@ -77,7 +77,7 @@ If you'd like to reach out, discuss this project, or connect:
 
 ---
 
-## 📁 Project Folder Structure
+## Project Folder Structure
 
 ```text
 quickfeed/
@@ -135,7 +135,7 @@ quickfeed/
 
 ---
 
-## 🔑 Environment Variables
+## Environment Variables
 
 Create a `.env` file inside the `backend/` directory based on `.env.example`:
 
@@ -175,7 +175,7 @@ npm run dev
 
 ---
 
-## 📡 REST API Summary
+## REST API Summary
 
 | Method | Endpoint | Access | Purpose |
 | :--- | :--- | :--- | :--- |
@@ -191,7 +191,7 @@ npm run dev
 
 ---
 
-## 💡 Key Design Decisions
+## Key Design Decisions
 
 1. **Strictly Two MongoDB Collections**:
    - Instead of separate collections for likes and comments, likes are stored as user ID references in `likedBy: [ObjectId]` and comments are embedded directly in `comments: [{ user, text, createdAt }]` within each post. This keeps database reads fast and avoids unnecessary collection joins.
