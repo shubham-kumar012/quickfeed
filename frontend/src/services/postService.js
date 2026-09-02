@@ -1,5 +1,6 @@
 // Posts API base URL (Vite proxies this to localhost:5000 in dev)
-const API_BASE_URL = "/api/posts";
+const BACKEND_URL = import.meta.env.VITE_API_BASE_URL || "";
+const API_BASE_URL = `${BACKEND_URL}/api/posts`;
 
 // Get all posts to display in the social feed
 export const getPosts = async (token) => {

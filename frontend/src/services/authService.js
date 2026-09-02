@@ -1,5 +1,6 @@
 // Auth API base URL (Vite proxies this to localhost:5000 in dev)
-const API_BASE_URL = "/api/auth";
+const BACKEND_URL = import.meta.env.VITE_API_BASE_URL || "";
+const API_BASE_URL = `${BACKEND_URL}/api/auth`;
 
 // Send signup request to backend
 export const signup = async (userData) => {

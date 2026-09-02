@@ -12,9 +12,13 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 const MONGO_URI = process.env.MONGO_URI;
 
-// Standard middleware setup
-// cors allows our React frontend to talk to this backend
-app.use(cors());
+// Allow requests only from the frontend URL defined in .env (or localhost in dev)
+app.use(
+  cors({
+    origin: process.env.CLIENT_URL || "http://localhost:3000",
+    credentials: true,
+  })
+);
 // express.json parses incoming JSON data in request bodies
 app.use(express.json());
 
