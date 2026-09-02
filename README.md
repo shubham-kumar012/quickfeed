@@ -1,6 +1,6 @@
 # QuickFeed — Mini Social Post Application
 
-Hey there! 👋 Welcome to **QuickFeed**, a full-stack social feed web application I built as an internship assignment.
+Hey there! 👋 Welcome to **QuickFeed**, a full-stack social feed web application.
 
 The goal of this project was to build a modern, responsive social posting platform with clean code, secure authentication, Cloudinary image uploads with on-the-fly Sharp optimization, and an interactive feed featuring optimistic likes and comments — all strictly organized into **only 2 MongoDB collections** (`users` and `posts`).
 
